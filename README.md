@@ -29,8 +29,8 @@ A full-featured car auction website in Estonian, modeled after romu.ee/oksjonid.
 ```bash
 npm install
 cp .env.example .env        # fill in values (see below)
-npx prisma migrate deploy    # or: npm run db:push
-npm run db:seed              # admin user + sample data
+npx prisma migrate deploy    # or: npm run db:push (skippable — also runs during build)
+npm run db:seed              # admin user + sample data (or visit /api/setup?secret=CRON_SECRET)
 npm run dev
 ```
 
@@ -44,8 +44,8 @@ See `.env.example`. Minimum for local development: `DATABASE_URL` and `AUTH_SECR
 
 1. Create a Neon PostgreSQL database and set `DATABASE_URL` (pooled connection string).
 2. Set all environment variables in the Vercel project settings.
-3. `vercel.json` registers a cron (`/api/cron/transition`, every 10 minutes) that auto-transitions expired auctions: `ACTIVE → PHONE_AUCTION` (when enabled) or `ACTIVE → ENDED`, and `PHONE_AUCTION → ENDED`. Set `CRON_SECRET` to protect the endpoint. Transitions also run opportunistically on page loads, so nothing breaks without the cron.
-4. Run migrations + seed once: `npx prisma migrate deploy && npm run db:seed`.
+3. Migrations run automatically during every Vercel build (`scripts/migrate-if-db.mjs`), so no terminal is needed. After the first deploy, seed the initial data by opening `https://your-site.vercel.app/api/setup?secret=YOUR_CRON_SECRET` in the browser (idempotent, guarded by `CRON_SECRET`).
+4. `vercel.json` registers a cron (`/api/cron/transition`, every 10 minutes) that auto-transitions expired auctions: `ACTIVE → PHONE_AUCTION` (when enabled) or `ACTIVE → ENDED`, and `PHONE_AUCTION → ENDED`. Set `CRON_SECRET` to protect the endpoint. Transitions also run opportunistically on page loads, so nothing breaks without the cron.
 
 ## Project structure
 
