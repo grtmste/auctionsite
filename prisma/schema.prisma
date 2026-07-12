@@ -1,0 +1,187 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  emailVerified DateTime?
+  name          String?
+  phone         String?
+  company       String?
+  role          Role      @default(USER)
+  disabled      Boolean   @default(false)
+  passwordHash  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  bids          Bid[]
+  sessions      Session[]
+  accounts      Account[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  type       String   @default("EMAIL_VERIFICATION") // EMAIL_VERIFICATION | PASSWORD_RESET
+
+  @@unique([identifier, token])
+}
+
+model Auction {
+  id                 String         @id @default(cuid())
+  slug               String         @unique
+  status             AuctionStatus  @default(DRAFT)
+  auctionType        AuctionType    @default(REGULAR)
+  title              Json // {et, en, ru, lv, lt}
+  description        Json?
+  make               String
+  model              String
+  year               Int?
+  firstRegDate       String?
+  regNumber          String?
+  vinCode            String?
+  fuelType           String?
+  engineVolume       Float?
+  enginePower        Int? // kW
+  gearbox            String?
+  drivenAxle         String?
+  odometer           Int? // km
+  climateControl     String?
+  seats              Int?
+  color              String?
+  condition          String?
+  vatPercent         Int            @default(0)
+  customAttributes   Json? // [{key, value}, ...]
+  startingPrice      Float
+  reservePrice       Float?
+  currentBid         Float?
+  auctionStart       DateTime
+  auctionEnd         DateTime
+  phoneAuctionActive Boolean        @default(false)
+  phoneAuctionEnd    DateTime?
+  reserveMet         Boolean        @default(false)
+  finalPrice         Float?
+  images             AuctionImage[]
+  bids               Bid[]
+  phoneBids          PhoneBid[]
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  createdBy          String
+}
+
+enum AuctionStatus {
+  DRAFT
+  ACTIVE
+  PHONE_AUCTION
+  ENDED
+  SOLD
+  CANCELLED
+}
+
+enum AuctionType {
+  REGULAR
+  PARTS
+  OTHER
+}
+
+model AuctionImage {
+  id        String  @id @default(cuid())
+  auctionId String
+  url       String
+  thumbUrl  String?
+  alt       String?
+  sortOrder Int     @default(0)
+  auction   Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+}
+
+model Bid {
+  id        String   @id @default(cuid())
+  auctionId String
+  userId    String
+  amount    Float
+  createdAt DateTime @default(now())
+  auction   Auction  @relation(fields: [auctionId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@index([auctionId, amount])
+}
+
+model PhoneBid {
+  id           String         @id @default(cuid())
+  auctionId    String
+  bidderName   String
+  bidderPhone  String?
+  bidderUserId String?
+  amount       Float
+  status       PhoneBidStatus @default(CONTACTED)
+  notes        String?
+  recordedBy   String
+  createdAt    DateTime       @default(now())
+  auction      Auction        @relation(fields: [auctionId], references: [id])
+}
+
+enum PhoneBidStatus {
+  CONTACTED
+  CONFIRMED
+  DECLINED
+  NO_ANSWER
+}
+
+model Translation {
+  id       String @id @default(cuid())
+  key      String
+  language String // "et", "en", "ru", "lv", "lt"
+  value    String @db.Text
+
+  @@unique([key, language])
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  slug      String   @unique // reeglid, kkk, privaatsuspoliitika, teenused
+  content   Json // {et, en, ru, lv, lt}
+  updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String @db.Text
+}

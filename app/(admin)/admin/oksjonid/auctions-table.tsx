@@ -1,0 +1,133 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import Link from "next/link";
+import { Pencil, Trash2, ExternalLink } from "lucide-react";
+import { StatusChip } from "@/components/admin/status-chip";
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { deleteAuction } from "../actions";
+import type { AuctionStatus, AuctionType } from "@prisma/client";
+
+interface Row {
+  id: string;
+  slug: string;
+  title: string;
+  status: AuctionStatus;
+  auctionType: AuctionType;
+  price: string;
+  bidCount: number;
+  auctionEnd: string;
+}
+
+const TYPE_LABELS: Record<AuctionType, string> = {
+  REGULAR: "Sõiduk",
+  PARTS: "Varuosa",
+  OTHER: "Muu",
+};
+
+export function AuctionsTable({ auctions }: { auctions: Row[] }) {
+  const [confirmId, setConfirmId] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  const confirmTarget = auctions.find((a) => a.id === confirmId);
+
+  function remove() {
+    if (!confirmId) return;
+    startTransition(async () => {
+      await deleteAuction(confirmId);
+      setConfirmId(null);
+    });
+  }
+
+  return (
+    <div className="rounded-lg border border-border bg-surface">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Pealkiri</TableHead>
+            <TableHead>Tüüp</TableHead>
+            <TableHead>Staatus</TableHead>
+            <TableHead>Hind</TableHead>
+            <TableHead>Pakkumisi</TableHead>
+            <TableHead>Lõpeb</TableHead>
+            <TableHead className="text-right">Tegevused</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {auctions.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={7} className="py-10 text-center text-muted">
+                Oksjoneid pole. Loo esimene oksjon!
+              </TableCell>
+            </TableRow>
+          )}
+          {auctions.map((auction) => (
+            <TableRow key={auction.id}>
+              <TableCell className="max-w-64 truncate font-medium">
+                {auction.title}
+              </TableCell>
+              <TableCell>{TYPE_LABELS[auction.auctionType]}</TableCell>
+              <TableCell>
+                <StatusChip status={auction.status} />
+              </TableCell>
+              <TableCell className="font-semibold">{auction.price}</TableCell>
+              <TableCell>{auction.bidCount}</TableCell>
+              <TableCell className="text-muted">{auction.auctionEnd}</TableCell>
+              <TableCell>
+                <div className="flex justify-end gap-1">
+                  <a href={`/oksjon/${auction.slug}`} target="_blank" rel="noreferrer">
+                    <Button variant="ghost" size="icon" title="Vaata">
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
+                  </a>
+                  <Link href={`/admin/oksjonid/${auction.id}/muuda`}>
+                    <Button variant="ghost" size="icon" title="Muuda">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Kustuta"
+                    onClick={() => setConfirmId(auction.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-primary" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      <Dialog
+        open={confirmId !== null}
+        onClose={() => setConfirmId(null)}
+        title="Kustuta oksjon"
+      >
+        <p className="text-sm text-muted">
+          Kas oled kindel, et soovid kustutada oksjoni{" "}
+          <strong className="text-foreground">{confirmTarget?.title}</strong>? Kõik
+          pakkumised kustutatakse. Seda toimingut ei saa tagasi võtta.
+        </p>
+        <div className="mt-6 flex justify-end gap-2">
+          <Button variant="outline" onClick={() => setConfirmId(null)}>
+            Tühista
+          </Button>
+          <Button variant="destructive" onClick={remove} disabled={pending}>
+            Kustuta
+          </Button>
+        </div>
+      </Dialog>
+    </div>
+  );
+}
