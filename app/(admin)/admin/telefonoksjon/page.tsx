@@ -70,7 +70,7 @@ export default async function PhoneAuctionPage({
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Telefonoksjon</h1>
+      <h1 className="text-2xl font-bold">Telefonioksjonid</h1>
 
       <div className="flex flex-col gap-6 xl:flex-row">
         {/* Sidebar: auctions in PHONE_AUCTION status */}
@@ -78,11 +78,11 @@ export default async function PhoneAuctionPage({
           <div className="rounded-lg border border-border bg-surface">
             <h2 className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-semibold">
               <Phone className="h-4 w-4 text-warning" />
-              Käimasolevad telefonoksjonid
+              Käimasolevad telefonioksjonid
             </h2>
             {phoneAuctions.length === 0 ? (
               <p className="px-4 py-6 text-sm text-muted">
-                Ühtegi telefonoksjonit ei ole hetkel käimas.
+                Ühtegi telefonioksjonit ei ole hetkel käimas.
               </p>
             ) : (
               <ul>
@@ -133,8 +133,8 @@ export default async function PhoneAuctionPage({
           />
         ) : (
           <div className="flex flex-1 items-center justify-center rounded-lg border border-border bg-surface py-24 text-muted">
-            Vali vasakult telefonoksjon või oota, kuni mõni oksjon jõuab
-            telefonoksjoni faasi.
+            Vali vasakult telefonioksjon või oota, kuni mõni oksjon jõuab
+            telefonioksjoni faasi.
           </div>
         )}
       </div>

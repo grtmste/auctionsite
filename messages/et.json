@@ -84,7 +84,7 @@
     "noBids": "Pakkumisi pole",
     "timeLeft": "Aega jäänud",
     "auctionEnded": "Oksjon on lõppenud",
-    "phoneAuctionBanner": "Käimas on telefonoksjon",
+    "phoneAuctionBanner": "Käimas on telefonioksjon",
     "phoneAuctionNote": "Oksjon jätkub telefoni teel. Parimate pakkujatega võetakse ühendust.",
     "bidHistory": "Pakkumiste ajalugu",
     "bidder": "Pakkuja",
@@ -117,7 +117,10 @@
     "finalPrice": "Lõpphind",
     "bestBid": "Parim pakkumine",
     "sold": "Müüdud",
-    "reserveNotMet": "Alghind ei täitunud"
+    "reserveNotMet": "Alghind ei täitunud",
+    "channel": "Kanal",
+    "channelWeb": "Veeb",
+    "channelPhone": "Telefon"
   },
   "bid": {
     "placeBid": "Tee pakkumine",
@@ -130,12 +133,15 @@
     "bidTooLow": "Pakkumine on liiga madal. Minimaalne pakkumine on {amount}",
     "bidError": "Pakkumine ebaõnnestus. Palun proovige uuesti.",
     "auctionNotActive": "Oksjon ei ole aktiivne",
-    "youAreHighest": "Sinu pakkumine on hetkel parim!"
+    "youAreHighest": "Sinu pakkumine on juba parim — ennast üle pakkuda ei saa",
+    "placeBidAmount": "Tee pakkumine {amount}",
+    "stepInfo": "Pakkumise samm on {step}",
+    "bidStep": "Pakkumine peab olema täpselt {amount}"
   },
   "status": {
     "DRAFT": "Mustand",
     "ACTIVE": "Aktiivne",
-    "PHONE_AUCTION": "Telefonoksjon",
+    "PHONE_AUCTION": "Telefonioksjon",
     "ENDED": "Lõppenud",
     "SOLD": "Müüdud",
     "CANCELLED": "Tühistatud"

@@ -117,7 +117,10 @@
     "finalPrice": "Final price",
     "bestBid": "Best bid",
     "sold": "Sold",
-    "reserveNotMet": "Reserve not met"
+    "reserveNotMet": "Reserve not met",
+    "channel": "Channel",
+    "channelWeb": "Web",
+    "channelPhone": "Phone"
   },
   "bid": {
     "placeBid": "Place bid",
@@ -130,7 +133,10 @@
     "bidTooLow": "Bid is too low. Minimum bid is {amount}",
     "bidError": "Bid failed. Please try again.",
     "auctionNotActive": "Auction is not active",
-    "youAreHighest": "Your bid is currently the highest!"
+    "youAreHighest": "Your bid is already the highest — you cannot outbid yourself",
+    "placeBidAmount": "Place bid {amount}",
+    "stepInfo": "The bid step is {step}",
+    "bidStep": "The bid must be exactly {amount}"
   },
   "status": {
     "DRAFT": "Draft",

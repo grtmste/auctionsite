@@ -3,8 +3,8 @@ import type { Metadata } from "next";
 import { auth } from "@/lib/auth";
 import { getAuctionBySlug } from "@/lib/auctions";
 import { runStatusTransitions } from "@/lib/auction-status";
-import { getMinBidIncrement } from "@/lib/settings";
-import { localized, toInitials } from "@/lib/utils";
+import { serializePublicBids } from "@/lib/bids";
+import { localized } from "@/lib/utils";
 import { ImageGallery } from "@/components/auction/image-gallery";
 import { AttributesTable } from "@/components/auction/attributes-table";
 import { BidPanel } from "@/components/auction/bid-panel";
@@ -32,10 +32,9 @@ export default async function AuctionPage({
 
   await runStatusTransitions().catch(() => 0);
 
-  const [auction, session, minIncrement] = await Promise.all([
+  const [auction, session] = await Promise.all([
     getAuctionBySlug(slug).catch(() => null),
     auth(),
-    getMinBidIncrement(),
   ]);
 
   if (!auction || auction.status === "DRAFT") notFound();
@@ -43,12 +42,8 @@ export default async function AuctionPage({
   const title = localized(auction.title, locale);
   const description = localized(auction.description, locale);
 
-  const bids = auction.bids.map((bid) => ({
-    id: bid.id,
-    initials: toInitials(bid.user.name ?? bid.user.email),
-    amount: bid.amount,
-    createdAt: bid.createdAt.toISOString(),
-  }));
+  // Web bids merged with confirmed phone bids
+  const bids = await serializePublicBids(auction.id);
 
   const customAttributes = Array.isArray(auction.customAttributes)
     ? (auction.customAttributes as { key: string; value: string }[])
@@ -114,12 +109,12 @@ export default async function AuctionPage({
                   status: auction.status,
                   currentBid: auction.currentBid,
                   startingPrice: auction.startingPrice,
+                  bidIncrement: auction.bidIncrement,
                   finalPrice: auction.finalPrice,
                   auctionEnd: auction.auctionEnd.toISOString(),
                   reserveMet: auction.reserveMet,
                 }}
                 bids={bids}
-                minIncrement={minIncrement}
                 viewer={{
                   loggedIn: Boolean(session?.user),
                   verified: Boolean(session?.user?.verified),

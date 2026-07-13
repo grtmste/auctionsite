@@ -20,6 +20,10 @@ const SETTING_FIELDS: { key: string; label: string; type?: string }[] = [
   { key: "business_reg", label: "Registrikood" },
   { key: "business_address", label: "Aadress" },
   { key: "business_hours", label: "Lahtiolekuajad" },
+  { key: "logo_url", label: "Logo URL (tühi = tekstilogo)" },
+  { key: "partner_bta_url", label: "BTA logo URL" },
+  { key: "partner_gjensidige_url", label: "Gjensidige logo URL" },
+  { key: "partner_seesam_url", label: "Seesam logo URL" },
 ];
 
 export function SettingsForms({ settings, profile }: SettingsFormsProps) {

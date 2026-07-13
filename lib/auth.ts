@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { verifyPassword } from "@/lib/passwords";
 
 declare module "next-auth" {
   interface Session {
@@ -43,8 +44,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const user = await db.user.findUnique({ where: { email } });
         if (!user?.passwordHash || user.disabled) return null;
 
-        const valid = await bcrypt.compare(password, user.passwordHash);
+        const { valid, needsRehash } = await verifyPassword(
+          password,
+          user.passwordHash
+        );
         if (!valid) return null;
+
+        // Imported WordPress hashes are upgraded to bcrypt on first login
+        if (needsRehash) {
+          const passwordHash = await bcrypt.hash(password, 12);
+          await db.user
+            .update({ where: { id: user.id }, data: { passwordHash } })
+            .catch(() => undefined);
+        }
 
         return {
           id: user.id,

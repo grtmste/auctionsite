@@ -1,13 +1,13 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Check, Search } from "lucide-react";
+import { Check, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
-import { saveTranslation, savePageContent } from "../actions";
+import { saveTranslation, savePageContent, autoTranslatePage, autoTranslateUi } from "../actions";
 
 const LANGS = ["et", "en", "ru", "lv", "lt"] as const;
 const PAGE_LABELS: Record<string, string> = {
@@ -21,12 +21,14 @@ interface TranslationEditorProps {
   defaults: Record<string, string>; // key -> Estonian file default
   overrides: Record<string, Record<string, string>>; // key -> lang -> value
   pageContents: Record<string, Record<string, string>>; // slug -> lang -> html
+  canAutoTranslate: boolean;
 }
 
 export function TranslationEditor({
   defaults,
   overrides: initialOverrides,
   pageContents: initialPages,
+  canAutoTranslate,
 }: TranslationEditorProps) {
   const [language, setLanguage] = useState<string>("et");
   const [filter, setFilter] = useState("");
@@ -37,7 +39,42 @@ export function TranslationEditor({
   const [pages, setPages] = useState(initialPages);
   const [activeSlug, setActiveSlug] = useState("reeglid");
   const [pageMessage, setPageMessage] = useState<string | null>(null);
+  const [autoMessage, setAutoMessage] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+
+  function runAutoTranslateUi() {
+    setAutoMessage(null);
+    startTransition(async () => {
+      const res = await autoTranslateUi(language);
+      setAutoMessage(
+        !res.ok
+          ? "Automaattõlge vajab ANTHROPIC_API_KEY seadistust Vercelis."
+          : res.translated === 0
+            ? "Kõik on juba tõlgitud — tõlkefailid katavad vaikimisi kõik keeled; siin tõlgitakse ainult sinu muudetud (ET) tekstid."
+            : `Tõlgitud ${res.translated} teksti keelde ${language.toUpperCase()}.`
+      );
+    });
+  }
+
+  function runAutoTranslatePage() {
+    setAutoMessage(null);
+    startTransition(async () => {
+      const res = await autoTranslatePage(activeSlug, ["en", "ru", "lv", "lt"]);
+      if (!res.ok) {
+        setAutoMessage(
+          res.error === "NO_API_KEY"
+            ? "Automaattõlge vajab ANTHROPIC_API_KEY seadistust Vercelis."
+            : "Eestikeelne sisu puudub — lisa see kõigepealt."
+        );
+        return;
+      }
+      setPages((prev) => ({
+        ...prev,
+        [activeSlug]: { ...prev[activeSlug], ...(res.content as Record<string, string>) },
+      }));
+      setAutoMessage(`Leht tõlgitud: ${res.translated.map((l) => l.toUpperCase()).join(", ")}`);
+    });
+  }
 
   const keys = useMemo(() => {
     const all = Object.keys(defaults).sort();
@@ -112,7 +149,21 @@ export function TranslationEditor({
               </option>
             ))}
           </Select>
+          {language !== "et" && (
+            <Button
+              variant="secondary"
+              onClick={runAutoTranslateUi}
+              disabled={pending || !canAutoTranslate}
+              title={canAutoTranslate ? "" : "Vajab ANTHROPIC_API_KEY seadistust"}
+            >
+              <Sparkles className="h-4 w-4" />
+              Tõlgi automaatselt
+            </Button>
+          )}
         </div>
+        {autoMessage && (
+          <p className="mb-3 rounded-md border border-border bg-surface p-2.5 text-sm">{autoMessage}</p>
+        )}
 
         <p className="mb-3 text-xs text-muted">
           Tühjaks jäetud väli kasutab vaikimisi tõlkefaili väärtust. Salvestatud
@@ -212,11 +263,21 @@ export function TranslationEditor({
           ))}
         </Tabs>
 
-        <div className="mt-4 flex items-center gap-3">
+        <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button onClick={savePage} disabled={pending}>
             Salvesta leht
           </Button>
+          <Button
+            variant="secondary"
+            onClick={runAutoTranslatePage}
+            disabled={pending || !canAutoTranslate}
+            title={canAutoTranslate ? "Tõlgib ET sisu keeltesse EN/RU/LV/LT" : "Vajab ANTHROPIC_API_KEY seadistust"}
+          >
+            <Sparkles className="h-4 w-4" />
+            Tõlgi automaatselt (ET → EN/RU/LV/LT)
+          </Button>
           {pageMessage && <span className="text-sm text-success">{pageMessage}</span>}
+          {autoMessage && <span className="text-sm text-muted">{autoMessage}</span>}
         </div>
       </TabsContent>
     </Tabs>

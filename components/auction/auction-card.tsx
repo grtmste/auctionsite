@@ -69,7 +69,7 @@ export function AuctionCard({ auction }: AuctionCardProps) {
             <p className="text-xs text-muted">
               {price != null ? t("currentBid") : t("startingPrice")}
             </p>
-            <p className="text-lg font-bold text-primary-hover">
+            <p className="text-lg font-bold text-primary">
               {formatCurrency(price ?? auction.startingPrice)}
             </p>
           </div>

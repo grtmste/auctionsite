@@ -64,10 +64,10 @@ export default async function HomePage({
       {/* Hero */}
       <section className="relative overflow-hidden border-b border-border bg-header">
         <div
-          className="pointer-events-none absolute inset-0 opacity-20"
+          className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse at 70% 20%, rgba(204,31,31,0.5), transparent 55%)",
+              "radial-gradient(ellipse at 70% 20%, rgba(232,131,12,0.18), transparent 55%)",
           }}
         />
         <div className="relative mx-auto max-w-7xl px-4 py-20 md:py-28">

@@ -117,7 +117,10 @@
     "finalPrice": "Galutinė kaina",
     "bestBid": "Geriausias statymas",
     "sold": "Parduota",
-    "reserveNotMet": "Rezervinė kaina nepasiekta"
+    "reserveNotMet": "Rezervinė kaina nepasiekta",
+    "channel": "Kanalas",
+    "channelWeb": "Internetu",
+    "channelPhone": "Telefonu"
   },
   "bid": {
     "placeBid": "Pateikti statymą",
@@ -130,7 +133,10 @@
     "bidTooLow": "Statymas per mažas. Minimalus statymas: {amount}",
     "bidError": "Statymas nepavyko. Bandykite dar kartą.",
     "auctionNotActive": "Aukcionas neaktyvus",
-    "youAreHighest": "Jūsų statymas šiuo metu didžiausias!"
+    "youAreHighest": "Jūsų statymas jau didžiausias — savęs perstatyti negalima",
+    "placeBidAmount": "Pateikti statymą {amount}",
+    "stepInfo": "Statymo žingsnis: {step}",
+    "bidStep": "Statymas turi būti lygiai {amount}"
   },
   "status": {
     "DRAFT": "Juodraštis",

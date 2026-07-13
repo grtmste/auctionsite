@@ -5,7 +5,7 @@ import type { AuctionStatus } from "@prisma/client";
 export const STATUS_LABELS_ET: Record<AuctionStatus, string> = {
   DRAFT: "Mustand",
   ACTIVE: "Aktiivne",
-  PHONE_AUCTION: "Telefonoksjon",
+  PHONE_AUCTION: "Telefonioksjon",
   ENDED: "Lõppenud",
   SOLD: "Müüdud",
   CANCELLED: "Tühistatud",

@@ -10,6 +10,10 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   business_reg: "10615599",
   business_address: "Üksnurme tee 14, Saku 75501",
   business_hours: "E–R 9–17, L–P suletud",
+  logo_url: "",
+  partner_bta_url: "",
+  partner_gjensidige_url: "",
+  partner_seesam_url: "",
 };
 
 export const getSettings = unstable_cache(

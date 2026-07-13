@@ -3,17 +3,22 @@ import { Link } from "@/i18n/navigation";
 import { getSettings } from "@/lib/settings";
 import { Logo } from "./logo";
 
-const PARTNERS = ["Seesam", "Gjensidige", "BTA", "ERGO"];
-
 export async function Footer() {
   const t = await getTranslations();
   const settings = await getSettings();
+
+  // Insurance partners: BTA, Gjensidige and Seesam (logos imported from romu.ee)
+  const partners = [
+    { name: "BTA", logoUrl: settings.partner_bta_url || null },
+    { name: "Gjensidige", logoUrl: settings.partner_gjensidige_url || null },
+    { name: "Seesam", logoUrl: settings.partner_seesam_url || null },
+  ];
 
   return (
     <footer className="mt-16 border-t border-border bg-header">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 md:grid-cols-4">
         <div>
-          <Logo />
+          <Logo imageUrl={settings.logo_url || null} />
           <p className="mt-4 text-sm leading-relaxed text-muted">
             {t("meta.defaultDescription")}
           </p>
@@ -90,13 +95,22 @@ export async function Footer() {
           <h4 className="mb-4 text-sm font-semibold uppercase tracking-wide text-foreground">
             {t("footer.partners")}
           </h4>
-          <div className="grid grid-cols-2 gap-2">
-            {PARTNERS.map((partner) => (
+          <div className="grid grid-cols-1 gap-2">
+            {partners.map((partner) => (
               <div
-                key={partner}
-                className="flex h-12 items-center justify-center rounded border border-border bg-surface text-sm font-semibold text-muted"
+                key={partner.name}
+                className="flex h-14 items-center justify-center rounded border border-border bg-surface px-4"
               >
-                {partner}
+                {partner.logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={partner.logoUrl}
+                    alt={partner.name}
+                    className="max-h-9 w-auto max-w-full"
+                  />
+                ) : (
+                  <span className="text-sm font-semibold text-muted">{partner.name}</span>
+                )}
               </div>
             ))}
           </div>

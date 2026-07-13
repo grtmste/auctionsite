@@ -72,11 +72,11 @@ export default async function EditAuctionPage({
       ? (auction.customAttributes as { key: string; value: string }[])
       : [],
     startingPrice: auction.startingPrice.toString(),
+    bidIncrement: auction.bidIncrement.toString(),
     reservePrice: auction.reservePrice?.toString() ?? "",
     auctionStart: toLocalInput(auction.auctionStart),
     auctionEnd: toLocalInput(auction.auctionEnd),
     phoneAuctionActive: auction.phoneAuctionActive,
-    phoneAuctionEnd: toLocalInput(auction.phoneAuctionEnd),
     images: auction.images.map((image) => ({ url: image.url, alt: image.alt ?? "" })),
   };
 

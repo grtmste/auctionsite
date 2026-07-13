@@ -22,7 +22,7 @@ import { Logo } from "@/components/layout/logo";
 const NAV = [
   { href: "/admin", label: "Töölaud", icon: LayoutDashboard, exact: true },
   { href: "/admin/oksjonid", label: "Oksjonid", icon: Gavel },
-  { href: "/admin/telefonoksjon", label: "Telefonoksjon", icon: Phone },
+  { href: "/admin/telefonoksjon", label: "Telefonioksjonid", icon: Phone },
   { href: "/admin/kasutajad", label: "Kasutajad", icon: Users },
   { href: "/admin/toolk", label: "Tõlked", icon: Languages },
   { href: "/admin/seaded", label: "Seaded", icon: Settings },

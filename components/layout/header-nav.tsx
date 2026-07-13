@@ -11,9 +11,10 @@ import { Logo } from "./logo";
 
 interface HeaderNavProps {
   user: { name: string; isAdmin: boolean } | null;
+  logoUrl?: string | null;
 }
 
-export function HeaderNav({ user }: HeaderNavProps) {
+export function HeaderNav({ user, logoUrl }: HeaderNavProps) {
   const t = useTranslations("nav");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -63,7 +64,7 @@ export function HeaderNav({ user }: HeaderNavProps) {
     <header className="sticky top-0 z-40 border-b border-border bg-header/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4">
         <Link href="/" className="shrink-0">
-          <Logo />
+          <Logo imageUrl={logoUrl} />
         </Link>
 
         {/* Desktop nav */}

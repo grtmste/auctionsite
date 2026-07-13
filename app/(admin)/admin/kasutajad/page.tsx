@@ -1,6 +1,7 @@
 import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 import { UsersTable } from "./users-table";
+import { WordpressImport } from "./wordpress-import";
 import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -26,7 +27,10 @@ export default async function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Kasutajad</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">Kasutajad</h1>
+        <WordpressImport />
+      </div>
       <UsersTable users={rows} />
     </div>
   );

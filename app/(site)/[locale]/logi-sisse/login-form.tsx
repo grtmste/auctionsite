@@ -78,7 +78,7 @@ export function LoginForm() {
             type="checkbox"
             name="rememberMe"
             defaultChecked
-            className="h-4 w-4 accent-[#CC1F1F]"
+            className="h-4 w-4 accent-[#E8830C]"
           />
           {t("rememberMe")}
         </label>

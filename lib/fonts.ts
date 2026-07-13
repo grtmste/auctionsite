@@ -1,17 +1,17 @@
-import { Roboto, Roboto_Slab } from "next/font/google";
+import { Inter, Manrope } from "next/font/google";
 
-export const roboto = Roboto({
+export const inter = Inter({
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "700"],
-  variable: "--font-roboto",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter",
   display: "swap",
 });
 
-export const robotoSlab = Roboto_Slab({
+export const manrope = Manrope({
   subsets: ["latin", "cyrillic"],
-  weight: ["400", "600", "700"],
-  variable: "--font-roboto-slab",
+  weight: ["500", "600", "700", "800"],
+  variable: "--font-manrope",
   display: "swap",
 });
 
-export const fontClasses = `${roboto.variable} ${robotoSlab.variable}`;
+export const fontClasses = `${inter.variable} ${manrope.variable}`;

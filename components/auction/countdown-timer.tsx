@@ -69,7 +69,7 @@ export function CountdownTimer({
       className={cn(
         "inline-flex items-center gap-1.5 font-mono font-semibold tabular-nums",
         compact ? "text-sm" : "text-lg",
-        urgent ? "text-primary-hover" : "text-foreground",
+        urgent ? "text-danger" : "text-foreground",
         className
       )}
     >

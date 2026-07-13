@@ -47,11 +47,11 @@ export interface AuctionFormValues {
   vatPercent: string;
   customAttributes: { key: string; value: string }[];
   startingPrice: string;
+  bidIncrement: string;
   reservePrice: string;
   auctionStart: string; // datetime-local
   auctionEnd: string;
   phoneAuctionActive: boolean;
-  phoneAuctionEnd: string;
   images: { url: string; alt: string }[];
 }
 
@@ -79,11 +79,11 @@ export const EMPTY_AUCTION: AuctionFormValues = {
   vatPercent: "0",
   customAttributes: [],
   startingPrice: "",
+  bidIncrement: "50",
   reservePrice: "",
   auctionStart: "",
   auctionEnd: "",
   phoneAuctionActive: false,
-  phoneAuctionEnd: "",
   images: [],
 };
 
@@ -117,6 +117,11 @@ export function AuctionForm({ initial }: { initial: AuctionFormValues }) {
       setError("Alghind peab olema suurem kui 0");
       return;
     }
+    const bidIncrement = num(form.bidIncrement);
+    if (!bidIncrement || bidIncrement <= 0) {
+      setError("Pakkumise samm peab olema suurem kui 0");
+      return;
+    }
     if (!form.auctionStart || !form.auctionEnd) {
       setError("Oksjoni algus- ja lõppaeg on kohustuslikud");
       return;
@@ -147,14 +152,11 @@ export function AuctionForm({ initial }: { initial: AuctionFormValues }) {
       vatPercent: Math.round(num(form.vatPercent) ?? 0),
       customAttributes: form.customAttributes.filter((a) => a.key.trim() !== ""),
       startingPrice,
+      bidIncrement,
       reservePrice: num(form.reservePrice),
       auctionStart: new Date(form.auctionStart).toISOString(),
       auctionEnd: new Date(form.auctionEnd).toISOString(),
       phoneAuctionActive: form.phoneAuctionActive,
-      phoneAuctionEnd:
-        form.phoneAuctionActive && form.phoneAuctionEnd
-          ? new Date(form.phoneAuctionEnd).toISOString()
-          : null,
       images: form.images.map((image) => ({ url: image.url, alt: image.alt || null })),
     };
 
@@ -269,12 +271,12 @@ export function AuctionForm({ initial }: { initial: AuctionFormValues }) {
           </div>
           {field("Käibemaks (%)", "vatPercent", { type: "number", min: 0, max: 100 })}
           {field("Alghind (€) *", "startingPrice", { type: "number", min: 0, step: "0.01" })}
+          {field("Pakkumise samm (€) *", "bidIncrement", { type: "number", min: 1, step: "1" })}
           {field("Reservhind (€) — avalikult peidetud", "reservePrice", {
             type: "number",
             min: 0,
             step: "0.01",
           })}
-          <div />
           {field("Oksjoni algus *", "auctionStart", { type: "datetime-local" })}
           {field("Oksjoni lõpp *", "auctionEnd", { type: "datetime-local" })}
         </div>
@@ -287,18 +289,12 @@ export function AuctionForm({ initial }: { initial: AuctionFormValues }) {
               onChange={(e) => set("phoneAuctionActive", e.target.checked)}
               className="h-4 w-4 accent-[#F59E0B]"
             />
-            Aktiveeri telefonoksjon
+            Aktiveeri telefonioksjon
           </label>
           <p className="mt-1 text-xs text-muted">
-            Pärast online-oksjoni lõppu jätkub oksjon telefoni teel.
+            Kui märgitud, läheb oksjon pärast online-oksjoni lõppu automaatselt
+            telefonioksjoniks. Telefonioksjoni lõpetab admin telefonioksjoni moodulist.
           </p>
-          {form.phoneAuctionActive && (
-            <div className="mt-3 max-w-xs">
-              {field("Telefonoksjoni lõpp", "phoneAuctionEnd", {
-                type: "datetime-local",
-              })}
-            </div>
-          )}
         </div>
       </section>
 

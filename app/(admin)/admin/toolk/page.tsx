@@ -1,5 +1,6 @@
 import { db } from "@/lib/db";
 import etMessages from "@/messages/et.json";
+import { translationAvailable } from "@/lib/translate";
 import { TranslationEditor } from "./translation-editor";
 
 export const dynamic = "force-dynamic";
@@ -52,6 +53,7 @@ export default async function TranslationsPage() {
         defaults={defaults}
         overrides={overrides}
         pageContents={pageContents}
+        canAutoTranslate={translationAvailable()}
       />
     </div>
   );

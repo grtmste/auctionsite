@@ -179,7 +179,7 @@ export function PhoneAuctionModule({
           </p>
         </div>
         <Button variant="destructive" onClick={() => setCloseConfirm(true)}>
-          Lõpeta telefonoksjon
+          Lõpeta telefonioksjon
         </Button>
       </div>
 
@@ -468,7 +468,7 @@ export function PhoneAuctionModule({
       <Dialog
         open={closeConfirm}
         onClose={() => setCloseConfirm(false)}
-        title="Lõpeta telefonoksjon"
+        title="Lõpeta telefonioksjon"
       >
         <p className="text-sm text-muted">
           {winner ? (

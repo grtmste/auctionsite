@@ -117,7 +117,10 @@
     "finalPrice": "Gala cena",
     "bestBid": "Labākā likme",
     "sold": "Pārdots",
-    "reserveNotMet": "Rezerves cena nav sasniegta"
+    "reserveNotMet": "Rezerves cena nav sasniegta",
+    "channel": "Kanāls",
+    "channelWeb": "Tīmeklis",
+    "channelPhone": "Telefons"
   },
   "bid": {
     "placeBid": "Izdarīt likmi",
@@ -130,7 +133,10 @@
     "bidTooLow": "Likme ir pārāk zema. Minimālā likme ir {amount}",
     "bidError": "Likme neizdevās. Lūdzu, mēģiniet vēlreiz.",
     "auctionNotActive": "Izsole nav aktīva",
-    "youAreHighest": "Jūsu likme pašlaik ir augstākā!"
+    "youAreHighest": "Jūsu likme jau ir augstākā — sevi pārsolīt nevar",
+    "placeBidAmount": "Izdarīt likmi {amount}",
+    "stepInfo": "Likmes solis ir {step}",
+    "bidStep": "Likmei jābūt tieši {amount}"
   },
   "status": {
     "DRAFT": "Melnraksts",

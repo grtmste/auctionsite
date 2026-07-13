@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getMinBidIncrement } from "@/lib/settings";
 import { triggerAuctionEvent } from "@/lib/pusher";
 import { sendOutbidEmail } from "@/lib/email";
-import { localized, toInitials } from "@/lib/utils";
+import { localized } from "@/lib/utils";
+import { serializePublicBids } from "@/lib/bids";
 
 export const dynamic = "force-dynamic";
 
@@ -35,10 +35,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "INVALID" }, { status: 400 });
   }
   const { auctionId } = parsed.data;
-  // Bids are whole-cent amounts
   const amount = Math.round(parsed.data.amount * 100) / 100;
-
-  const minIncrement = await getMinBidIncrement();
 
   try {
     const result = await db.$transaction(async (tx) => {
@@ -65,14 +62,20 @@ export async function POST(request: NextRequest) {
         throw new BidError("NOT_ACTIVE", 409);
       }
 
-      const minBid = auction.currentBid
-        ? auction.currentBid + minIncrement
-        : auction.startingPrice;
-      if (amount < minBid) {
-        throw new BidError("BID_TOO_LOW", 409, { minBid });
+      const previousTop = auction.bids[0];
+
+      // A user cannot outbid themselves
+      if (previousTop && previousTop.user.id === user.id) {
+        throw new BidError("YOU_ARE_HIGHEST", 409);
       }
 
-      const previousTop = auction.bids[0];
+      // Bids advance in fixed steps: exactly current bid + increment
+      // (first bid: starting price + increment) — nothing more, nothing less
+      const increment = auction.bidIncrement;
+      const requiredBid = (auction.currentBid ?? auction.startingPrice) + increment;
+      if (Math.abs(amount - requiredBid) > 0.001) {
+        throw new BidError("BID_STEP", 409, { requiredBid });
+      }
 
       await tx.bid.create({
         data: { auctionId, userId: user.id, amount },
@@ -85,25 +88,15 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return { auction, previousTop };
+      return { auction, previousTop, nextBid: amount + increment };
     });
 
-    // Latest bid history for real-time subscribers (initials only)
-    const latestBids = await db.bid.findMany({
-      where: { auctionId },
-      orderBy: { amount: "desc" },
-      take: 10,
-      include: { user: { select: { name: true, email: true } } },
-    });
-    const serialized = latestBids.map((bid) => ({
-      id: bid.id,
-      initials: toInitials(bid.user.name ?? bid.user.email),
-      amount: bid.amount,
-      createdAt: bid.createdAt.toISOString(),
-    }));
+    // Latest public bid history (web + confirmed phone bids, initials only)
+    const serialized = await serializePublicBids(auctionId);
 
     await triggerAuctionEvent(auctionId, "bid-placed", {
       amount,
+      nextBid: result.nextBid,
       bids: serialized,
     });
 
@@ -118,7 +111,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ ok: true, amount, bids: serialized });
+    return NextResponse.json({
+      ok: true,
+      amount,
+      nextBid: result.nextBid,
+      bids: serialized,
+    });
   } catch (error) {
     if (error instanceof BidError) {
       return NextResponse.json(

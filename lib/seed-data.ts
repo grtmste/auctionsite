@@ -36,6 +36,10 @@ export async function runSeed(db: PrismaClient): Promise<string[]> {
     business_reg: "10615599",
     business_address: "Üksnurme tee 14, Saku 75501",
     business_hours: "E–R 9–17, L–P suletud",
+    logo_url: "",
+    partner_bta_url: "",
+    partner_gjensidige_url: "",
+    partner_seesam_url: "",
   };
   for (const [key, value] of Object.entries(settings)) {
     await db.siteSettings.upsert({
@@ -52,8 +56,8 @@ export async function runSeed(db: PrismaClient): Promise<string[]> {
 <p>Oksjonil osalemiseks peab kasutaja olema vähemalt 18-aastane ning kinnitanud oma e-posti aadressi.</p>
 <h3>Pakkumiste tegemine</h3>
 <p>Iga pakkumine on siduv. Minimaalne pakkumise samm on 50 €. Pakkumist ei saa tagasi võtta.</p>
-<h3>Telefonoksjon</h3>
-<p>Pärast online-oksjoni lõppu võib toimuda telefonoksjon, mille käigus võetakse parimate pakkujatega telefoni teel ühendust.</p>
+<h3>Telefonioksjon</h3>
+<p>Pärast online-oksjoni lõppu võib toimuda telefonioksjon, mille käigus võetakse parimate pakkujatega telefoni teel ühendust.</p>
 <h3>Tasumine ja üleandmine</h3>
 <p>Võitja tasub ostuhinna 3 tööpäeva jooksul. Sõiduk antakse üle pärast täieliku makse laekumist.</p>
 <h3>Vastutus</h3>
@@ -62,8 +66,8 @@ export async function runSeed(db: PrismaClient): Promise<string[]> {
 <p>Registreeri konto, kinnita oma e-posti aadress ning saad teha pakkumisi kõikidel aktiivsetel oksjonitel.</p>
 <h3>Kas pakkumine on siduv?</h3>
 <p>Jah, iga tehtud pakkumine on siduv ning seda ei saa tagasi võtta.</p>
-<h3>Mis on telefonoksjon?</h3>
-<p>Pärast online-oksjoni lõppu võib müüja jätkata oksjonit telefoni teel parimate pakkujatega. Sellisel juhul kuvatakse oksjonil märge "Käimas on telefonoksjon".</p>
+<h3>Mis on telefonioksjon?</h3>
+<p>Pärast online-oksjoni lõppu võib müüja jätkata oksjonit telefoni teel parimate pakkujatega. Sellisel juhul kuvatakse oksjonil märge "Käimas on telefonioksjon".</p>
 <h3>Kas sõidukeid saab enne ostmist vaadata?</h3>
 <p>Jah, sõidukitega saab tutvuda meie platsil Sakus tööaegadel E–R 9–17. Soovitame aja eelnevalt kokku leppida.</p>
 <h3>Kuidas toimub tasumine?</h3>
@@ -249,6 +253,7 @@ export async function runSeed(db: PrismaClient): Promise<string[]> {
         vatPercent: sample.vatPercent,
         customAttributes: sample.customAttributes,
         startingPrice: sample.startingPrice,
+        bidIncrement: 100,
         reservePrice: sample.reservePrice,
         auctionStart: now(),
         auctionEnd: sample.auctionEnd,

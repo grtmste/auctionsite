@@ -40,7 +40,7 @@ export function RegisterForm() {
           email: formData.get("email"),
           password,
           name: formData.get("name"),
-          phone: formData.get("phone") || null,
+          phone: formData.get("phone"),
           company: formData.get("company") || null,
         }),
       });
@@ -79,10 +79,8 @@ export function RegisterForm() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="reg-phone">
-              {t("phone")} <span className="text-muted">({t("optional")})</span>
-            </Label>
-            <Input id="reg-phone" name="phone" type="tel" autoComplete="tel" />
+            <Label htmlFor="reg-phone">{t("phone")}</Label>
+            <Input id="reg-phone" name="phone" type="tel" required autoComplete="tel" />
           </div>
           <div>
             <Label htmlFor="reg-company">
@@ -115,7 +113,7 @@ export function RegisterForm() {
           />
         </div>
         <label className="flex items-center gap-2 text-sm text-muted">
-          <input type="checkbox" required className="h-4 w-4 accent-[#CC1F1F]" />
+          <input type="checkbox" required className="h-4 w-4 accent-[#E8830C]" />
           {t("ageConfirm")}
         </label>
         {error && (

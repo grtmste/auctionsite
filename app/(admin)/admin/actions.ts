@@ -42,11 +42,11 @@ const auctionSchema = z.object({
     .array(z.object({ key: z.string(), value: z.string() }))
     .optional(),
   startingPrice: z.number().positive(),
+  bidIncrement: z.number().positive(),
   reservePrice: z.number().positive().nullable().optional(),
   auctionStart: z.string(),
   auctionEnd: z.string(),
   phoneAuctionActive: z.boolean(),
-  phoneAuctionEnd: z.string().nullable().optional(),
   images: z.array(
     z.object({
       url: z.string().url(),
@@ -86,11 +86,11 @@ export async function saveAuction(input: AuctionFormInput) {
     vatPercent: data.vatPercent,
     customAttributes: data.customAttributes ?? [],
     startingPrice: data.startingPrice,
+    bidIncrement: data.bidIncrement,
     reservePrice: data.reservePrice ?? null,
     auctionStart: new Date(data.auctionStart),
     auctionEnd: new Date(data.auctionEnd),
     phoneAuctionActive: data.phoneAuctionActive,
-    phoneAuctionEnd: data.phoneAuctionEnd ? new Date(data.phoneAuctionEnd) : null,
   };
 
   let auctionId = data.id;
@@ -183,6 +183,10 @@ export async function saveSettings(settings: Record<string, string>) {
     "business_reg",
     "business_address",
     "business_hours",
+    "logo_url",
+    "partner_bta_url",
+    "partner_gjensidige_url",
+    "partner_seesam_url",
   ];
   for (const [key, value] of Object.entries(settings)) {
     if (!allowedKeys.includes(key)) continue;
@@ -306,13 +310,49 @@ export async function savePhoneBid(input: PhoneBidInput) {
       },
     });
   }
+  await syncPhoneBidToAuction(data.auctionId);
   revalidatePath("/admin/telefonoksjon");
   return { ok: true };
 }
 
+/**
+ * Confirmed phone bids are public: the auction's current bid and the live
+ * bid history reflect the best confirmed phone bid immediately.
+ */
+async function syncPhoneBidToAuction(auctionId: string) {
+  const auction = await db.auction.findUnique({
+    where: { id: auctionId },
+    include: {
+      phoneBids: { where: { status: "CONFIRMED" }, orderBy: { amount: "desc" }, take: 1 },
+      bids: { orderBy: { amount: "desc" }, take: 1 },
+    },
+  });
+  if (!auction) return;
+
+  const bestWeb = auction.bids[0]?.amount ?? 0;
+  const bestPhone = auction.phoneBids[0]?.amount ?? 0;
+  const best = Math.max(bestWeb, bestPhone);
+  if (best <= 0) return;
+
+  if (auction.currentBid !== best) {
+    await db.auction.update({
+      where: { id: auctionId },
+      data: {
+        currentBid: best,
+        reserveMet: !auction.reservePrice || best >= auction.reservePrice,
+      },
+    });
+  }
+
+  const { serializePublicBids } = await import("@/lib/bids");
+  const bids = await serializePublicBids(auctionId);
+  await triggerAuctionEvent(auctionId, "bid-placed", { amount: best, bids });
+}
+
 export async function deletePhoneBid(id: string) {
   await requireAdmin();
-  await db.phoneBid.delete({ where: { id } });
+  const deleted = await db.phoneBid.delete({ where: { id } });
+  await syncPhoneBidToAuction(deleted.auctionId);
   revalidatePath("/admin/telefonoksjon");
   return { ok: true };
 }
@@ -371,4 +411,176 @@ export async function closePhoneAuction(auctionId: string) {
 
   revalidatePath("/admin/telefonoksjon");
   return { ok: true };
+}
+
+/* --------------------------- WordPress import -------------------------- */
+
+interface WpUserRow {
+  login: string;
+  email: string;
+  hash: string;
+  name: string;
+}
+
+/**
+ * Parses a WordPress user export. Accepts:
+ * - CSV lines: user_login,user_email,user_pass,display_name
+ * - JSON array: [{user_login, user_email, user_pass, display_name}, ...]
+ * Passwords keep their WordPress hash ($P$… or $wp$…) and are verified with
+ * the phpass/WP algorithm at login, then upgraded to bcrypt automatically.
+ */
+export async function importWordpressUsers(raw: string) {
+  await requireAdmin();
+
+  const rows: WpUserRow[] = [];
+  const trimmed = raw.trim();
+
+  if (trimmed.startsWith("[") || trimmed.startsWith("{")) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      const list = Array.isArray(parsed) ? parsed : [parsed];
+      for (const item of list) {
+        if (item?.user_email && item?.user_pass) {
+          rows.push({
+            login: String(item.user_login ?? ""),
+            email: String(item.user_email),
+            hash: String(item.user_pass),
+            name: String(item.display_name ?? item.user_login ?? ""),
+          });
+        }
+      }
+    } catch {
+      return { ok: false as const, error: "JSON_PARSE" };
+    }
+  } else {
+    for (const line of trimmed.split(/\r?\n/)) {
+      if (!line.trim()) continue;
+      const parts = line.split(",").map((part) => part.trim().replace(/^"|"$/g, ""));
+      if (parts.length < 3) continue;
+      // header row
+      if (/user_login/i.test(parts[0])) continue;
+      rows.push({
+        login: parts[0],
+        email: parts[1],
+        hash: parts[2],
+        name: parts[3] ?? parts[0],
+      });
+    }
+  }
+
+  let created = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const row of rows) {
+    const email = row.email.trim().toLowerCase();
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || !row.hash.startsWith("$")) {
+      errors.push(email || row.login);
+      continue;
+    }
+    const existing = await db.user.findUnique({ where: { email } });
+    if (existing) {
+      skipped++;
+      continue;
+    }
+    await db.user.create({
+      data: {
+        email,
+        name: row.name || row.login,
+        passwordHash: row.hash,
+        emailVerified: new Date(), // WordPress users are already established
+      },
+    });
+    created++;
+  }
+
+  revalidatePath("/admin/kasutajad");
+  return { ok: true as const, created, skipped, invalid: errors.length };
+}
+
+/* ------------------------- romu.ee content import ---------------------- */
+
+export async function importRomuContent(translate: boolean) {
+  await requireAdmin();
+  const { importFromRomu } = await import("@/lib/romu-import");
+  const result = await importFromRomu({ translate });
+  revalidateTag("settings");
+  revalidatePath("/", "layout");
+  return result;
+}
+
+/* ---------------------------- Auto-translate --------------------------- */
+
+/** Translate a content page from Estonian into the given languages. */
+export async function autoTranslatePage(slug: string, targetLangs: string[]) {
+  await requireAdmin();
+  const { translateHtml, translationAvailable } = await import("@/lib/translate");
+  if (!translationAvailable()) {
+    return { ok: false as const, error: "NO_API_KEY" };
+  }
+
+  const page = await db.page.findUnique({ where: { slug } });
+  const content =
+    page?.content && typeof page.content === "object"
+      ? ({ ...(page.content as Record<string, string>) } as Record<string, string>)
+      : {};
+  const source = content.et;
+  if (!source?.trim()) return { ok: false as const, error: "NO_SOURCE" };
+
+  const done: string[] = [];
+  for (const lang of targetLangs) {
+    if (lang === "et") continue;
+    try {
+      content[lang] = await translateHtml(source, lang);
+      done.push(lang);
+    } catch {
+      // continue with remaining languages
+    }
+  }
+
+  await db.page.upsert({
+    where: { slug },
+    create: { slug, content },
+    update: { content },
+  });
+  revalidatePath("/", "layout");
+  return { ok: true as const, translated: done, content };
+}
+
+/**
+ * Translate admin-overridden Estonian UI strings into a target language.
+ * Only keys that have an ET override but no value in the target language
+ * are translated (file translations already cover the defaults).
+ */
+export async function autoTranslateUi(targetLang: string) {
+  await requireAdmin();
+  const { translateStrings, translationAvailable } = await import("@/lib/translate");
+  if (!translationAvailable()) {
+    return { ok: false as const, error: "NO_API_KEY" };
+  }
+
+  const [etRows, targetRows] = await Promise.all([
+    db.translation.findMany({ where: { language: "et" } }),
+    db.translation.findMany({ where: { language: targetLang } }),
+  ]);
+  const targetKeys = new Set(targetRows.map((row) => row.key));
+  const missing: Record<string, string> = {};
+  for (const row of etRows) {
+    if (!targetKeys.has(row.key)) missing[row.key] = row.value;
+  }
+  if (Object.keys(missing).length === 0) {
+    return { ok: true as const, translated: 0 };
+  }
+
+  const translated = await translateStrings(missing, targetLang);
+  for (const [key, value] of Object.entries(translated)) {
+    await db.translation.upsert({
+      where: { key_language: { key, language: targetLang } },
+      create: { key, language: targetLang, value },
+      update: { value },
+    });
+  }
+  revalidateTag("translations");
+  revalidatePath("/", "layout");
+  return { ok: true as const, translated: Object.keys(translated).length };
 }

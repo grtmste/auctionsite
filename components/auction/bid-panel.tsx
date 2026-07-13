@@ -3,10 +3,9 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
-import { Gavel, TriangleAlert } from "lucide-react";
+import { Gavel, Globe, Phone, TriangleAlert } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { formatCurrency, formatDateTime, cn } from "@/lib/utils";
 import { getPusherClient } from "@/lib/pusher-client";
 import { CountdownTimer } from "./countdown-timer";
@@ -18,6 +17,7 @@ export interface SerializedBid {
   initials: string;
   amount: number;
   createdAt: string;
+  channel: "WEB" | "PHONE";
 }
 
 interface BidPanelProps {
@@ -27,16 +27,16 @@ interface BidPanelProps {
     status: AuctionStatus;
     currentBid: number | null;
     startingPrice: number;
+    bidIncrement: number;
     finalPrice: number | null;
     auctionEnd: string;
     reserveMet: boolean;
   };
   bids: SerializedBid[];
-  minIncrement: number;
   viewer: { loggedIn: boolean; verified: boolean; userId?: string };
 }
 
-export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: BidPanelProps) {
+export function BidPanel({ auction, bids: initialBids, viewer }: BidPanelProps) {
   const t = useTranslations();
   const locale = useLocale();
   const router = useRouter();
@@ -44,11 +44,11 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
   const [status, setStatus] = useState(auction.status);
   const [currentBid, setCurrentBid] = useState(auction.currentBid);
   const [bids, setBids] = useState(initialBids);
-  const [amount, setAmount] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const minBid = (currentBid ?? auction.startingPrice - minIncrement) + minIncrement;
+  // Bids advance in fixed steps set by the admin
+  const nextBid = (currentBid ?? auction.startingPrice) + auction.bidIncrement;
   const isActive = status === "ACTIVE";
   const isPhone = status === "PHONE_AUCTION";
 
@@ -81,39 +81,35 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auction.id]);
 
-  async function placeBid(e: React.FormEvent) {
-    e.preventDefault();
+  async function placeBid() {
     setMessage(null);
-    const value = Number(amount.replace(",", "."));
-    if (!Number.isFinite(value) || value < minBid) {
-      setMessage({
-        type: "error",
-        text: t("bid.bidTooLow", { amount: formatCurrency(minBid) }),
-      });
-      return;
-    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/bids", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ auctionId: auction.id, amount: value }),
+        body: JSON.stringify({ auctionId: auction.id, amount: nextBid }),
       });
       const data = await res.json();
       if (!res.ok) {
         const text =
-          data.error === "BID_TOO_LOW"
-            ? t("bid.bidTooLow", { amount: formatCurrency(data.minBid ?? minBid) })
-            : data.error === "NOT_ACTIVE"
-              ? t("bid.auctionNotActive")
-              : data.error === "NOT_VERIFIED"
-                ? t("bid.verifyToBid")
-                : t("bid.bidError");
+          data.error === "BID_STEP"
+            ? t("bid.bidStep", {
+                amount: formatCurrency(data.requiredBid ?? nextBid),
+              })
+            : data.error === "YOU_ARE_HIGHEST"
+              ? t("bid.youAreHighest")
+              : data.error === "NOT_ACTIVE"
+                ? t("bid.auctionNotActive")
+                : data.error === "NOT_VERIFIED"
+                  ? t("bid.verifyToBid")
+                  : t("bid.bidError");
         setMessage({ type: "error", text });
+        // Refresh local state so the button shows the right next amount
+        if (data.requiredBid) setCurrentBid(data.requiredBid - auction.bidIncrement);
       } else {
-        setCurrentBid(value);
+        setCurrentBid(data.amount);
         if (data.bids) setBids(data.bids);
-        setAmount("");
         setMessage({ type: "success", text: t("bid.bidSuccess") });
       }
     } catch {
@@ -144,7 +140,7 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
                 : t("auction.bestBid")
               : t("auction.startingPrice")}
           </p>
-          <p className="mt-1 font-heading text-4xl font-bold text-primary-hover">
+          <p className="mt-1 font-heading text-4xl font-bold text-primary">
             {formatCurrency(currentBid ?? auction.startingPrice)}
           </p>
           {!isActive && !isPhone && auction.finalPrice == null && currentBid != null && !auction.reserveMet && (
@@ -159,7 +155,7 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
           {t("auction.endsAt")}: {formatDateTime(auction.auctionEnd, locale)}
         </p>
 
-        {/* Bid form */}
+        {/* Fixed-step bid button */}
         {isActive && (
           <div className="mt-5 border-t border-border pt-5">
             {!viewer.loggedIn ? (
@@ -169,33 +165,27 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
                 </Button>
               </Link>
             ) : !viewer.verified ? (
-              <div className="rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
+              <div className="rounded-md border border-warning/50 bg-warning/10 p-3 text-sm text-warning">
                 {t("bid.verifyToBid")}
               </div>
             ) : (
-              <form onSubmit={placeBid} className="space-y-3">
-                <div>
-                  <label htmlFor="bid-amount" className="mb-1.5 block text-sm text-muted">
-                    {t("bid.yourBid")}
-                  </label>
-                  <Input
-                    id="bid-amount"
-                    inputMode="decimal"
-                    placeholder={String(minBid)}
-                    value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
-                    required
-                  />
-                  <p className="mt-1.5 text-xs text-muted">
-                    {t("bid.minBid", { amount: formatCurrency(minBid) })}
-                  </p>
-                </div>
-                <Button type="submit" size="lg" className="w-full" disabled={submitting}>
+              <div className="space-y-3">
+                <Button
+                  size="lg"
+                  className="w-full"
+                  disabled={submitting}
+                  onClick={placeBid}
+                >
                   <Gavel className="h-4 w-4" />
-                  {t("bid.placeBid")}
+                  {t("bid.placeBidAmount", { amount: formatCurrency(nextBid) })}
                 </Button>
+                <p className="text-center text-xs text-muted">
+                  {t("bid.stepInfo", {
+                    step: formatCurrency(auction.bidIncrement),
+                  })}
+                </p>
                 <p className="text-center text-xs text-muted">{t("bid.mustBe18")}</p>
-              </form>
+              </div>
             )}
             {message && (
               <p
@@ -203,7 +193,7 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
                   "mt-3 rounded-md p-2.5 text-sm",
                   message.type === "success"
                     ? "bg-success/10 text-success"
-                    : "bg-primary/10 text-primary-hover"
+                    : "bg-primary/10 text-primary"
                 )}
               >
                 {message.text}
@@ -213,13 +203,13 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
         )}
 
         {isPhone && (
-          <div className="mt-5 rounded-md border border-warning/40 bg-warning/10 p-3 text-sm text-warning">
+          <div className="mt-5 rounded-md border border-warning/50 bg-warning/10 p-3 text-sm text-warning">
             {t("auction.phoneAuctionNote")}
           </div>
         )}
       </div>
 
-      {/* Bid history */}
+      {/* Bid history (web + phone) */}
       <div className="rounded-lg border border-border bg-surface">
         <h3 className="border-b border-border px-5 py-3 font-heading font-semibold">
           {t("auction.bidHistory")}
@@ -230,24 +220,38 @@ export function BidPanel({ auction, bids: initialBids, minIncrement, viewer }: B
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted">
-                <th className="px-5 py-2.5 font-medium">{t("auction.bidder")}</th>
-                <th className="px-5 py-2.5 font-medium">{t("auction.amount")}</th>
-                <th className="px-5 py-2.5 font-medium">{t("auction.time")}</th>
+                <th className="px-4 py-2.5 font-medium">{t("auction.bidder")}</th>
+                <th className="px-4 py-2.5 font-medium">{t("auction.amount")}</th>
+                <th className="px-4 py-2.5 font-medium">{t("auction.channel")}</th>
+                <th className="px-4 py-2.5 font-medium">{t("auction.time")}</th>
               </tr>
             </thead>
             <tbody>
               {bids.map((bid, index) => (
                 <tr key={bid.id} className="border-b border-border last:border-0">
-                  <td className="px-5 py-2.5 font-medium">{bid.initials}</td>
+                  <td className="px-4 py-2.5 font-medium">{bid.initials}</td>
                   <td
                     className={cn(
-                      "px-5 py-2.5 font-semibold",
+                      "px-4 py-2.5 font-semibold",
                       index === 0 ? "text-success" : "text-foreground"
                     )}
                   >
                     {formatCurrency(bid.amount)}
                   </td>
-                  <td className="px-5 py-2.5 text-muted">
+                  <td className="px-4 py-2.5">
+                    {bid.channel === "PHONE" ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-warning">
+                        <Phone className="h-3 w-3" />
+                        {t("auction.channelPhone")}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-muted">
+                        <Globe className="h-3 w-3" />
+                        {t("auction.channelWeb")}
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-4 py-2.5 text-muted">
                     {formatDateTime(bid.createdAt, locale)}
                   </td>
                 </tr>

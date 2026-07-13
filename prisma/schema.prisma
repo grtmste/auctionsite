@@ -90,6 +90,7 @@ model Auction {
   vatPercent         Int            @default(0)
   customAttributes   Json? // [{key, value}, ...]
   startingPrice      Float
+  bidIncrement       Float          @default(50)
   reservePrice       Float?
   currentBid         Float?
   auctionStart       DateTime
