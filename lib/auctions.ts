@@ -83,6 +83,11 @@ export async function listAuctions(filters: AuctionFilters) {
       where,
       include: {
         images: { orderBy: { sortOrder: "asc" }, take: 1 },
+        phoneBids: {
+          where: { status: "CONFIRMED" },
+          orderBy: { amount: "desc" },
+          take: 1,
+        },
         _count: { select: { bids: true } },
       },
     }),
@@ -94,7 +99,8 @@ export async function listAuctions(filters: AuctionFilters) {
     const index = STATUS_ORDER.indexOf(s);
     return index === -1 ? 99 : index === 3 ? 2 : index; // ENDED and SOLD share a group
   };
-  const price = (a: (typeof rows)[number]) => a.currentBid ?? a.startingPrice;
+  const price = (a: (typeof rows)[number]) =>
+    Math.max(a.currentBid ?? 0, a.phoneBids[0]?.amount ?? 0) || a.startingPrice;
 
   rows.sort((a, b) => {
     const rank = statusRank(a.status) - statusRank(b.status);

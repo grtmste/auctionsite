@@ -42,8 +42,11 @@ export default async function AuctionPage({
   const title = localized(auction.title, locale);
   const description = localized(auction.description, locale);
 
-  // Web bids merged with confirmed phone bids
+  // Web bids merged with confirmed phone bids; the best of them is the
+  // authoritative current bid shown publicly
   const bids = await serializePublicBids(auction.id);
+  const effectiveCurrentBid =
+    Math.max(auction.currentBid ?? 0, bids[0]?.amount ?? 0) || null;
 
   const customAttributes = Array.isArray(auction.customAttributes)
     ? (auction.customAttributes as { key: string; value: string }[])
@@ -107,7 +110,7 @@ export default async function AuctionPage({
                   id: auction.id,
                   slug: auction.slug,
                   status: auction.status,
-                  currentBid: auction.currentBid,
+                  currentBid: effectiveCurrentBid,
                   startingPrice: auction.startingPrice,
                   bidIncrement: auction.bidIncrement,
                   finalPrice: auction.finalPrice,

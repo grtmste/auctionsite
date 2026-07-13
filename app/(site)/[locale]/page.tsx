@@ -30,6 +30,11 @@ export default async function HomePage({
       take: 6,
       include: {
         images: { orderBy: { sortOrder: "asc" }, take: 1 },
+        phoneBids: {
+          where: { status: "CONFIRMED" },
+          orderBy: { amount: "desc" },
+          take: 1,
+        },
         _count: { select: { bids: true } },
       },
     });
