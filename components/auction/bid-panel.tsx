@@ -52,31 +52,64 @@ export function BidPanel({ auction, bids: initialBids, viewer }: BidPanelProps) 
   const isActive = status === "ACTIVE";
   const isPhone = status === "PHONE_AUCTION";
 
-  // Real-time updates via Pusher
+  // Real-time updates: instant via Pusher when configured, plus polling
+  // (10 s without Pusher, 30 s safety net with it) so the current bid and
+  // history always refresh automatically for everyone watching
   useEffect(() => {
     const pusher = getPusherClient();
-    if (!pusher) return;
-    const channel = pusher.subscribe(`auction-${auction.id}`);
+    let channel: ReturnType<NonNullable<typeof pusher>["subscribe"]> | null = null;
 
-    channel.bind(
-      "bid-placed",
-      (data: { amount: number; bids: SerializedBid[] }) => {
-        setCurrentBid(data.amount);
-        if (data.bids) setBids(data.bids);
+    if (pusher) {
+      channel = pusher.subscribe(`auction-${auction.id}`);
+      channel.bind(
+        "bid-placed",
+        (data: { amount: number; bids: SerializedBid[] }) => {
+          setCurrentBid(data.amount);
+          if (data.bids) setBids(data.bids);
+        }
+      );
+      channel.bind("auction-ended", () => {
+        setStatus("ENDED");
+        router.refresh();
+      });
+      channel.bind("phone-auction-started", () => {
+        setStatus("PHONE_AUCTION");
+        router.refresh();
+      });
+    }
+
+    let lastStatus = auction.status;
+    const poll = async () => {
+      if (document.hidden) return;
+      try {
+        const res = await fetch(`/api/auction-state/${auction.id}`, {
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data: {
+          status: AuctionStatus;
+          currentBid: number | null;
+          bids: SerializedBid[];
+        } = await res.json();
+        setCurrentBid(data.currentBid);
+        setBids(data.bids);
+        if (data.status !== lastStatus) {
+          lastStatus = data.status;
+          setStatus(data.status);
+          router.refresh();
+        }
+      } catch {
+        // transient network error — next tick will retry
       }
-    );
-    channel.bind("auction-ended", () => {
-      setStatus("ENDED");
-      router.refresh();
-    });
-    channel.bind("phone-auction-started", () => {
-      setStatus("PHONE_AUCTION");
-      router.refresh();
-    });
+    };
+    const interval = setInterval(poll, pusher ? 30_000 : 10_000);
 
     return () => {
-      channel.unbind_all();
-      pusher.unsubscribe(`auction-${auction.id}`);
+      if (pusher && channel) {
+        channel.unbind_all();
+        pusher.unsubscribe(`auction-${auction.id}`);
+      }
+      clearInterval(interval);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [auction.id]);
