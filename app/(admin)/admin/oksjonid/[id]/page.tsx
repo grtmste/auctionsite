@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, ExternalLink, FileText } from "lucide-react";
+import { ArrowLeft, Pencil, ExternalLink, FileText, FileDown } from "lucide-react";
 import { db } from "@/lib/db";
 import { serializeStaffBids } from "@/lib/bids";
+import { computeTotals, parseLines } from "@/lib/invoices";
 import { formatCurrency, formatDateTime, localized } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,13 @@ export default async function AdminAuctionOverviewPage({
   });
   if (!auction) notFound();
 
-  const bids = await serializeStaffBids(auction.id);
+  const [bids, invoices] = await Promise.all([
+    serializeStaffBids(auction.id),
+    db.invoice.findMany({
+      where: { auctionId: auction.id },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
   const isFinished = ["ENDED", "SOLD", "CANCELLED"].includes(auction.status);
 
   return (
@@ -71,7 +78,7 @@ export default async function AdminAuctionOverviewPage({
               Vaata lehel
             </Button>
           </a>
-          {isFinished && bids.length > 0 && (
+          {bids.length > 0 && (
             <Link href={`/admin/arved/uus?auctionId=${auction.id}`}>
               <Button size="sm">
                 <FileText className="h-4 w-4" />
@@ -81,6 +88,42 @@ export default async function AdminAuctionOverviewPage({
           )}
         </div>
       </div>
+
+      {/* Invoices already created for this auction */}
+      {invoices.length > 0 && (
+        <div className="rounded-md border border-border bg-surface p-4">
+          <p className="mb-2 text-sm font-medium">Selle oksjoni arved</p>
+          <ul className="divide-y divide-border">
+            {invoices.map((inv) => {
+              const total = computeTotals(parseLines(inv.lines)).gross;
+              return (
+                <li
+                  key={inv.id}
+                  className="flex flex-wrap items-center justify-between gap-2 py-2 text-sm"
+                >
+                  <span className="font-medium">
+                    {inv.number}
+                    <span className="ml-2 font-normal text-muted">{inv.buyerName}</span>
+                  </span>
+                  <span className="flex items-center gap-3">
+                    <span className="font-semibold">{formatCurrency(total)}</span>
+                    <a href={`/api/arved/${inv.id}/pdf`} target="_blank" rel="noreferrer">
+                      <Button variant="ghost" size="icon" title="PDF">
+                        <FileDown className="h-4 w-4" />
+                      </Button>
+                    </a>
+                    <Link href={`/admin/arved/${inv.id}/muuda`}>
+                      <Button variant="ghost" size="icon" title="Muuda">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
 
       {/* Summary cards */}
       <div className="grid gap-3 sm:grid-cols-3">
@@ -119,7 +162,7 @@ export default async function AdminAuctionOverviewPage({
         <h2 className="mb-3 text-lg font-semibold">
           Pakkumiste ülevaade ({bids.length})
         </h2>
-        <BidOverview bids={bids} />
+        <BidOverview bids={bids} invoiceAuctionId={auction.id} />
       </div>
     </div>
   );

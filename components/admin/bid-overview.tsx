@@ -1,5 +1,7 @@
-import { Globe, Phone } from "lucide-react";
+import Link from "next/link";
+import { Globe, Phone, FileText } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -28,11 +30,26 @@ const PHONE_STATUS_VARIANTS: Record<
   NO_ANSWER: "muted",
 };
 
+/** Link to the new-invoice form, targeting a specific bid. */
+function invoiceHref(auctionId: string, bid: StaffBid): string {
+  const key = bid.channel === "WEB" ? "webBidId" : "phoneBidId";
+  return `/admin/arved/uus?auctionId=${auctionId}&${key}=${bid.id}`;
+}
+
 /**
  * Full bid history for staff (admin / vendor). Shows the winning bid, the
  * channel each bid came through (web vs phone) and the real bidder identity.
+ * When `invoiceAuctionId` is set (admin only) each bid can be turned into an
+ * invoice for that specific bidder.
  */
-export function BidOverview({ bids }: { bids: StaffBid[] }) {
+export function BidOverview({
+  bids,
+  invoiceAuctionId,
+}: {
+  bids: StaffBid[];
+  invoiceAuctionId?: string;
+}) {
+  const canInvoice = Boolean(invoiceAuctionId);
   if (bids.length === 0) {
     return (
       <div className="rounded-md border border-border bg-surface p-8 text-center text-sm text-muted">
@@ -62,6 +79,14 @@ export function BidOverview({ bids }: { bids: StaffBid[] }) {
           )}
           {winner.channel === "PHONE" ? "Telefon" : "Veeb"}
         </div>
+        {canInvoice && (
+          <Link href={invoiceHref(invoiceAuctionId!, winner)} className="ml-auto">
+            <Button size="sm">
+              <FileText className="h-4 w-4" />
+              Loo arve võitjale
+            </Button>
+          </Link>
+        )}
       </div>
 
       <div className="overflow-x-auto rounded-md border border-border bg-surface">
@@ -75,6 +100,7 @@ export function BidOverview({ bids }: { bids: StaffBid[] }) {
               <TableHead className="text-right">Summa</TableHead>
               <TableHead>Aeg</TableHead>
               <TableHead>Staatus</TableHead>
+              {canInvoice && <TableHead className="text-right">Arve</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -122,6 +148,15 @@ export function BidOverview({ bids }: { bids: StaffBid[] }) {
                     <span className="text-xs text-muted">—</span>
                   )}
                 </TableCell>
+                {canInvoice && (
+                  <TableCell className="text-right">
+                    <Link href={invoiceHref(invoiceAuctionId!, bid)}>
+                      <Button variant="ghost" size="icon" title="Loo arve sellele pakkujale">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </Button>
+                    </Link>
+                  </TableCell>
+                )}
               </TableRow>
             ))}
           </TableBody>

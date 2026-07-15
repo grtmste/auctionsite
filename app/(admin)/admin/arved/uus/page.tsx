@@ -14,9 +14,9 @@ function isoDate(d: Date): string {
 export default async function NewInvoicePage({
   searchParams,
 }: {
-  searchParams: Promise<{ auctionId?: string }>;
+  searchParams: Promise<{ auctionId?: string; webBidId?: string; phoneBidId?: string }>;
 }) {
-  const { auctionId } = await searchParams;
+  const { auctionId, webBidId, phoneBidId } = await searchParams;
   const [number, settings] = await Promise.all([nextInvoiceNumber(), getSettings()]);
 
   const dueDays = Number(settings.invoice_due_days) || 7;
@@ -68,37 +68,82 @@ export default async function NewInvoicePage({
     });
 
     if (auction) {
-      const topWeb = auction.bids[0];
-      const topPhone = auction.phoneBids[0];
-      const phoneWins = (topPhone?.amount ?? 0) > (topWeb?.amount ?? 0);
-      const finalPrice =
-        auction.finalPrice ??
-        (Math.max(topWeb?.amount ?? 0, topPhone?.amount ?? 0) ||
-          auction.startingPrice);
+      // Resolve the buyer + price. A specific bid may be targeted from the bid
+      // overview (e.g. to invoice a runner-up when the winner backs out);
+      // otherwise fall back to the highest bidder.
+      let buyerName = "";
+      let buyerEmail = "";
+      let buyerPhone = "";
+      let buyerCompany = "";
+      let buyerUserId: string | null = null;
+      let price = 0;
 
-      // Buyer: prefer the winning bidder's account details
-      const winnerUser = phoneWins
-        ? topPhone?.bidderUserId
-          ? await db.user.findUnique({ where: { id: topPhone.bidderUserId } })
-          : null
-        : topWeb?.user ?? null;
+      if (webBidId) {
+        const bid = await db.bid.findFirst({
+          where: { id: webBidId, auctionId: auction.id },
+          include: { user: true },
+        });
+        if (bid) {
+          buyerUserId = bid.user.id;
+          buyerName = bid.user.name ?? bid.user.email;
+          buyerEmail = bid.user.email;
+          buyerPhone = bid.user.phone ?? "";
+          buyerCompany = bid.user.company ?? "";
+          price = bid.amount;
+        }
+      } else if (phoneBidId) {
+        const bid = await db.phoneBid.findFirst({
+          where: { id: phoneBidId, auctionId: auction.id },
+        });
+        if (bid) {
+          const linked = bid.bidderUserId
+            ? await db.user.findUnique({ where: { id: bid.bidderUserId } })
+            : null;
+          buyerUserId = linked?.id ?? null;
+          buyerName = linked?.name ?? bid.bidderName;
+          buyerEmail = linked?.email ?? "";
+          buyerPhone = linked?.phone ?? bid.bidderPhone ?? "";
+          buyerCompany = linked?.company ?? "";
+          price = bid.amount;
+        }
+      }
+
+      if (price === 0) {
+        // No specific bid targeted (or it was missing): use the winner.
+        const topWeb = auction.bids[0];
+        const topPhone = auction.phoneBids[0];
+        const phoneWins = (topPhone?.amount ?? 0) > (topWeb?.amount ?? 0);
+        price =
+          auction.finalPrice ??
+          (Math.max(topWeb?.amount ?? 0, topPhone?.amount ?? 0) ||
+            auction.startingPrice);
+        const winnerUser = phoneWins
+          ? topPhone?.bidderUserId
+            ? await db.user.findUnique({ where: { id: topPhone.bidderUserId } })
+            : null
+          : topWeb?.user ?? null;
+        buyerUserId = winnerUser?.id ?? null;
+        buyerName = winnerUser?.name ?? (phoneWins ? topPhone?.bidderName ?? "" : "");
+        buyerEmail = winnerUser?.email ?? "";
+        buyerPhone =
+          winnerUser?.phone ?? (phoneWins ? topPhone?.bidderPhone ?? "" : "");
+        buyerCompany = winnerUser?.company ?? "";
+      }
 
       const line: InvoiceLine = {
         description: `${localized(auction.title, "et")} (oksjon nr ${auction.slug})`,
         qty: 1,
         unit: "tk",
-        unitPrice: finalPrice,
+        unitPrice: price,
         vatRate: auction.vatPercent,
       };
 
       base.auctionId = auction.id;
-      base.userId = winnerUser?.id ?? null;
-      base.buyerName =
-        winnerUser?.name ?? (phoneWins ? topPhone?.bidderName ?? "" : "");
-      base.buyerEmail = winnerUser?.email ?? "";
-      base.buyerPhone =
-        winnerUser?.phone ?? (phoneWins ? topPhone?.bidderPhone ?? "" : "");
-      base.buyerCompany = winnerUser?.company ?? "";
+      base.userId = buyerUserId;
+      base.buyerName = buyerName;
+      base.buyerEmail = buyerEmail;
+      base.buyerPhone = buyerPhone;
+      base.buyerCompany = buyerCompany;
       base.lines = [line];
     }
   }
