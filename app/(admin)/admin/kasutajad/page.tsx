@@ -18,6 +18,8 @@ export default async function AdminUsersPage() {
     id: user.id,
     name: user.name ?? "—",
     email: user.email,
+    phone: user.phone ?? "",
+    company: user.company ?? "",
     registered: formatDate(user.createdAt),
     role: user.role,
     verified: Boolean(user.emailVerified),

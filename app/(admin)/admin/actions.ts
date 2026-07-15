@@ -186,6 +186,51 @@ export async function createUser(input: z.infer<typeof createUserSchema>) {
   return { ok: true as const };
 }
 
+const updateUserSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  role: z.enum(["USER", "VENDOR", "ADMIN"]),
+  // Optional: only set when the admin wants to reset the password.
+  password: z.string().min(8).optional().or(z.literal("")),
+});
+
+/** Admin edits an existing account: details, email, role and (optionally) password. */
+export async function updateUser(input: z.infer<typeof updateUserSchema>) {
+  const admin = await requireAdmin();
+  const data = updateUserSchema.parse(input);
+  const email = data.email.trim().toLowerCase();
+
+  // Prevent an admin from demoting themselves out of the admin role.
+  if (data.id === admin.id && data.role !== "ADMIN") {
+    return { ok: false as const, error: "SELF_DEMOTE" };
+  }
+
+  // Email must stay unique across other accounts.
+  const clash = await db.user.findUnique({ where: { email } });
+  if (clash && clash.id !== data.id) {
+    return { ok: false as const, error: "EMAIL_EXISTS" };
+  }
+
+  await db.user.update({
+    where: { id: data.id },
+    data: {
+      name: data.name.trim(),
+      email,
+      phone: data.phone?.trim() || null,
+      company: data.company?.trim() || null,
+      role: data.role as Role,
+      ...(data.password
+        ? { passwordHash: await bcrypt.hash(data.password, 12) }
+        : {}),
+    },
+  });
+  revalidatePath("/admin/kasutajad");
+  return { ok: true as const };
+}
+
 export async function verifyUser(userId: string) {
   await requireAdmin();
   await db.user.update({

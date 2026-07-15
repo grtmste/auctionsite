@@ -1,7 +1,7 @@
 "use client";
 
-import { useTransition } from "react";
-import { BadgeCheck, Ban, CheckCircle2 } from "lucide-react";
+import { useState, useTransition } from "react";
+import { BadgeCheck, Ban, CheckCircle2, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { setUserRole, verifyUser, setUserDisabled } from "../actions";
+import { EditUserDialog } from "./edit-user-dialog";
 import type { Role } from "@prisma/client";
 
 const ROLE_LABELS: Record<Role, string> = {
@@ -32,6 +33,8 @@ interface Row {
   id: string;
   name: string;
   email: string;
+  phone: string;
+  company: string;
   registered: string;
   role: Role;
   verified: boolean;
@@ -42,6 +45,8 @@ interface Row {
 
 export function UsersTable({ users }: { users: Row[] }) {
   const [pending, startTransition] = useTransition();
+  const [editId, setEditId] = useState<string | null>(null);
+  const editing = users.find((u) => u.id === editId) ?? null;
 
   return (
     <div className="rounded-lg border border-border bg-surface">
@@ -100,6 +105,14 @@ export function UsersTable({ users }: { users: Row[] }) {
               <TableCell>{user.bidCount}</TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title="Muuda kasutajat"
+                    onClick={() => setEditId(user.id)}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
                   {!user.verified && (
                     <Button
                       variant="ghost"
@@ -138,6 +151,23 @@ export function UsersTable({ users }: { users: Row[] }) {
           ))}
         </TableBody>
       </Table>
+
+      {editing && (
+        <EditUserDialog
+          key={editing.id}
+          user={{
+            id: editing.id,
+            name: editing.name,
+            email: editing.email,
+            phone: editing.phone,
+            company: editing.company,
+            role: editing.role,
+            isSelf: editing.isSelf,
+          }}
+          open={editId !== null}
+          onClose={() => setEditId(null)}
+        />
+      )}
     </div>
   );
 }
