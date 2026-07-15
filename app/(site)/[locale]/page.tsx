@@ -99,13 +99,14 @@ export default async function HomePage({
       <section className="mx-auto max-w-7xl px-4 py-14">
         <h2 className="mb-8 text-2xl font-bold">{t("home.categoriesTitle")}</h2>
         <div className="grid gap-5 md:grid-cols-3">
-          {categories.map((category) => (
+          {categories.map((category, index) => (
             <Link
               key={category.href}
               href={category.href}
-              className="group rounded-md border border-border bg-surface p-8 transition-all duration-200 hover:-translate-y-1 hover:border-primary/60 hover:shadow-lg"
+              className="category-card rise-in group rounded-md border border-border bg-surface p-8"
+              style={{ animationDelay: `${index * 0.09}s` }}
             >
-              <category.icon className="h-10 w-10 text-primary transition-transform group-hover:scale-110" />
+              <category.icon className="category-icon h-10 w-10 text-primary" />
               <h3 className="mt-5 text-xl font-semibold">{category.title}</h3>
               <p className="mt-2 text-sm text-muted">{category.desc}</p>
             </Link>

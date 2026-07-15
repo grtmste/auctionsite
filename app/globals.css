@@ -57,6 +57,165 @@
   }
 }
 
+/* Slow horizontal pan for living gradients (buttons, accent lines) */
+@keyframes gradient-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+/* Single light sweep across a surface */
+@keyframes sheen {
+  0% {
+    transform: translateX(-160%) skewX(-16deg);
+  }
+  100% {
+    transform: translateX(260%) skewX(-16deg);
+  }
+}
+
+/* Ambient, slowly drifting colour glow behind cards */
+@keyframes aurora-drift {
+  0% {
+    transform: translate(-8%, -6%) rotate(0deg) scale(1.1);
+  }
+  50% {
+    transform: translate(8%, 6%) rotate(180deg) scale(1.25);
+  }
+  100% {
+    transform: translate(-8%, -6%) rotate(360deg) scale(1.1);
+  }
+}
+
+/* Gentle vertical float for icons */
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Primary button: a soft, living orange gradient that pans on hover with a
+   single light sweep. Applied via the default Button variant.
+--------------------------------------------------------------------------- */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background-image: linear-gradient(
+    100deg,
+    #e8830c 0%,
+    #f5a028 42%,
+    #d97706 100%
+  );
+  background-size: 220% 100%;
+  background-position: 0% 50%;
+  transition:
+    background-position 0.7s ease,
+    box-shadow 0.35s ease,
+    transform 0.2s ease;
+}
+.btn-primary:hover {
+  background-position: 100% 50%;
+  box-shadow: 0 8px 22px -8px rgba(232, 131, 12, 0.65);
+}
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 75%
+  );
+  transform: translateX(-160%) skewX(-16deg);
+  pointer-events: none;
+}
+.btn-primary:hover::after {
+  animation: sheen 0.9s ease;
+}
+
+/* ---------------------------------------------------------------------------
+   Category cards: soft, slow lift with a drifting aurora glow and an animated
+   gradient top-accent that grows in on hover.
+--------------------------------------------------------------------------- */
+.category-card {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  transition:
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 0.55s ease,
+    border-color 0.55s ease;
+}
+.category-card::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  z-index: -1;
+  background: conic-gradient(
+    from 0deg,
+    rgba(232, 131, 12, 0),
+    rgba(245, 158, 11, 0.2),
+    rgba(232, 131, 12, 0),
+    rgba(249, 115, 22, 0.18),
+    rgba(232, 131, 12, 0)
+  );
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  animation: aurora-drift 16s linear infinite;
+}
+.category-card::after {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: linear-gradient(90deg, #e8830c, #f5a028, #d97706, #e8830c);
+  background-size: 220% 100%;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  animation: gradient-pan 5s linear infinite;
+}
+.category-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(232, 131, 12, 0.5);
+  box-shadow: 0 20px 44px -22px rgba(232, 131, 12, 0.5);
+}
+.category-card:hover::before {
+  opacity: 1;
+}
+.category-card:hover::after {
+  transform: scaleX(1);
+}
+.category-card .category-icon {
+  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.category-card:hover .category-icon {
+  animation: float-soft 2.6s ease-in-out infinite;
+}
+
+/* Honour users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .btn-primary,
+  .btn-primary::after,
+  .category-card,
+  .category-card::before,
+  .category-card::after,
+  .category-card:hover .category-icon {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 body {
   background-color: var(--color-background);
   color: var(--color-foreground);
