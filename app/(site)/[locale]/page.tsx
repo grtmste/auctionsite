@@ -76,11 +76,20 @@ export default async function HomePage({
           }}
         />
         <div className="relative mx-auto max-w-7xl px-4 py-20 md:py-28">
-          <h1 className="max-w-3xl text-4xl font-bold leading-tight md:text-5xl">
+          <h1 className="rise-in max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
             {t("home.heroTitle")}
           </h1>
-          <p className="mt-5 max-w-2xl text-lg text-muted">{t("home.heroSubtitle")}</p>
-          <Link href="/autooksjonid" className="mt-8 inline-block">
+          <p
+            className="rise-in mt-5 max-w-2xl text-lg text-muted"
+            style={{ animationDelay: "0.08s" }}
+          >
+            {t("home.heroSubtitle")}
+          </p>
+          <Link
+            href="/autooksjonid"
+            className="rise-in mt-8 inline-block"
+            style={{ animationDelay: "0.16s" }}
+          >
             <Button size="lg">{t("home.heroCta")}</Button>
           </Link>
         </div>
@@ -94,7 +103,7 @@ export default async function HomePage({
             <Link
               key={category.href}
               href={category.href}
-              className="group rounded-lg border border-border bg-surface p-8 transition-colors hover:border-primary/60"
+              className="group rounded-md border border-border bg-surface p-8 transition-all duration-200 hover:-translate-y-1 hover:border-primary/60 hover:shadow-lg"
             >
               <category.icon className="h-10 w-10 text-primary transition-transform group-hover:scale-110" />
               <h3 className="mt-5 text-xl font-semibold">{category.title}</h3>

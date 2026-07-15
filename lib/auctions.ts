@@ -7,6 +7,7 @@ export interface AuctionFilters {
   auctionType?: AuctionType;
   make?: string;
   fuelType?: string;
+  gearbox?: string;
   yearFrom?: number;
   yearTo?: number;
   priceFrom?: number;
@@ -27,6 +28,7 @@ export function parseFilters(params: Record<string, string | undefined>): Auctio
   return {
     make: params.make || undefined,
     fuelType: params.fuelType || undefined,
+    gearbox: params.gearbox || undefined,
     yearFrom: num(params.yearFrom),
     yearTo: num(params.yearTo),
     priceFrom: num(params.priceFrom),
@@ -47,6 +49,8 @@ function buildWhere(filters: AuctionFilters): Prisma.AuctionWhereInput {
   if (filters.make) where.make = { equals: filters.make, mode: "insensitive" };
   if (filters.fuelType)
     where.fuelType = { equals: filters.fuelType, mode: "insensitive" };
+  if (filters.gearbox)
+    where.gearbox = { equals: filters.gearbox, mode: "insensitive" };
   if (filters.yearFrom || filters.yearTo) {
     where.year = {
       ...(filters.yearFrom ? { gte: filters.yearFrom } : {}),
@@ -127,17 +131,23 @@ export async function getFilterOptions(auctionType?: AuctionType) {
     status: { in: STATUS_ORDER },
     ...(auctionType ? { auctionType } : {}),
   };
-  const [makes, fuels] = await Promise.all([
+  const [makes, fuels, gearboxRows] = await Promise.all([
     db.auction.findMany({ where, select: { make: true }, distinct: ["make"] }),
     db.auction.findMany({
       where: { ...where, fuelType: { not: null } },
       select: { fuelType: true },
       distinct: ["fuelType"],
     }),
+    db.auction.findMany({
+      where: { ...where, gearbox: { not: null } },
+      select: { gearbox: true },
+      distinct: ["gearbox"],
+    }),
   ]);
   return {
     makes: makes.map((m) => m.make).filter(Boolean).sort(),
     fuelTypes: fuels.map((f) => f.fuelType!).filter(Boolean).sort(),
+    gearboxes: gearboxRows.map((g) => g.gearbox!).filter(Boolean).sort(),
   };
 }
 

@@ -14,6 +14,14 @@ export const DEFAULT_SETTINGS: Record<string, string> = {
   partner_bta_url: "",
   partner_gjensidige_url: "",
   partner_seesam_url: "",
+  // Invoicing / banking
+  business_vat_no: "",
+  bank_name: "",
+  bank_iban: "",
+  bank_bic: "",
+  invoice_default_vat: "0",
+  invoice_due_days: "7",
+  invoice_note: "Palume arve tasuda maksetähtajaks. Maksekorralduse selgitusse märkida arve number.",
 };
 
 export const getSettings = unstable_cache(

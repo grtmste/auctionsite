@@ -24,6 +24,13 @@ const SETTING_FIELDS: { key: string; label: string; type?: string }[] = [
   { key: "partner_bta_url", label: "BTA logo URL" },
   { key: "partner_gjensidige_url", label: "Gjensidige logo URL" },
   { key: "partner_seesam_url", label: "Seesam logo URL" },
+  { key: "business_vat_no", label: "KMKR nr (arvetel)" },
+  { key: "bank_name", label: "Pank (arvetel)" },
+  { key: "bank_iban", label: "IBAN (arvetel)" },
+  { key: "bank_bic", label: "BIC/SWIFT (arvetel)" },
+  { key: "invoice_default_vat", label: "Arve vaikimisi KM % ", type: "number" },
+  { key: "invoice_due_days", label: "Arve maksetähtaeg (päeva)", type: "number" },
+  { key: "invoice_note", label: "Arve märkus/jalus" },
 ];
 
 export function SettingsForms({ settings, profile }: SettingsFormsProps) {

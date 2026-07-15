@@ -9,7 +9,7 @@ import { slugify } from "@/lib/utils";
 import { triggerAuctionEvent } from "@/lib/pusher";
 import { sendAuctionWonEmail } from "@/lib/email";
 import { localized } from "@/lib/utils";
-import type { AuctionStatus, AuctionType, PhoneBidStatus, Role } from "@prisma/client";
+import type { AuctionStatus, AuctionType, InvoiceStatus, PhoneBidStatus, Role } from "@prisma/client";
 
 /* ------------------------------ Auctions ------------------------------ */
 
@@ -187,6 +187,13 @@ export async function saveSettings(settings: Record<string, string>) {
     "partner_bta_url",
     "partner_gjensidige_url",
     "partner_seesam_url",
+    "business_vat_no",
+    "bank_name",
+    "bank_iban",
+    "bank_bic",
+    "invoice_default_vat",
+    "invoice_due_days",
+    "invoice_note",
   ];
   for (const [key, value] of Object.entries(settings)) {
     if (!allowedKeys.includes(key)) continue;
@@ -637,4 +644,80 @@ export async function autoTranslateUi(targetLang: string) {
   revalidateTag("translations");
   revalidatePath("/", "layout");
   return { ok: true as const, translated: Object.keys(translated).length };
+}
+
+/* ------------------------------ Invoices ------------------------------ */
+
+const invoiceLineSchema = z.object({
+  description: z.string(),
+  qty: z.number(),
+  unit: z.string(),
+  unitPrice: z.number(),
+  vatRate: z.number(),
+});
+
+const invoiceSchema = z.object({
+  id: z.string().optional(),
+  number: z.string().min(1),
+  auctionId: z.string().nullable().optional(),
+  userId: z.string().nullable().optional(),
+  buyerName: z.string().min(1),
+  buyerEmail: z.string().nullable().optional(),
+  buyerPhone: z.string().nullable().optional(),
+  buyerCompany: z.string().nullable().optional(),
+  buyerRegCode: z.string().nullable().optional(),
+  buyerAddress: z.string().nullable().optional(),
+  issueDate: z.string(),
+  dueDate: z.string(),
+  lines: z.array(invoiceLineSchema),
+  notes: z.string().nullable().optional(),
+  status: z.enum(["DRAFT", "UNPAID", "PAID", "CANCELLED"]),
+});
+
+export type InvoiceInput = z.infer<typeof invoiceSchema>;
+
+export async function saveInvoice(input: InvoiceInput) {
+  const admin = await requireAdmin();
+  const data = invoiceSchema.parse(input);
+
+  const base = {
+    number: data.number.trim(),
+    auctionId: data.auctionId || null,
+    userId: data.userId || null,
+    buyerName: data.buyerName.trim(),
+    buyerEmail: data.buyerEmail?.trim() || null,
+    buyerPhone: data.buyerPhone?.trim() || null,
+    buyerCompany: data.buyerCompany?.trim() || null,
+    buyerRegCode: data.buyerRegCode?.trim() || null,
+    buyerAddress: data.buyerAddress?.trim() || null,
+    issueDate: new Date(data.issueDate),
+    dueDate: new Date(data.dueDate),
+    lines: data.lines.filter((l) => l.description.trim() !== ""),
+    notes: data.notes?.trim() || null,
+    status: data.status as InvoiceStatus,
+  };
+
+  try {
+    if (data.id) {
+      await db.invoice.update({ where: { id: data.id }, data: base });
+    } else {
+      await db.invoice.create({ data: { ...base, createdBy: admin.name ?? admin.email } });
+    }
+  } catch (error) {
+    // Unique number collision
+    if (error && typeof error === "object" && "code" in error && error.code === "P2002") {
+      return { ok: false as const, error: "NUMBER_EXISTS" };
+    }
+    throw error;
+  }
+
+  revalidatePath("/admin/arved");
+  return { ok: true as const };
+}
+
+export async function deleteInvoice(id: string) {
+  await requireAdmin();
+  await db.invoice.delete({ where: { id } });
+  revalidatePath("/admin/arved");
+  return { ok: true };
 }

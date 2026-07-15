@@ -25,10 +25,15 @@ export async function ListingPage({
   // Opportunistic status transitions (cheap no-op when nothing has expired)
   await runStatusTransitions().catch(() => 0);
 
+  // Filters only make sense for vehicle auctions
+  const showFilters = auctionType === "REGULAR";
+
   const filters = { ...parseFilters(searchParams), auctionType, page: 1 };
   const [{ auctions, total, hasMore }, options] = await Promise.all([
     listAuctions(filters),
-    getFilterOptions(auctionType),
+    showFilters
+      ? getFilterOptions(auctionType)
+      : Promise.resolve({ makes: [], fuelTypes: [], gearboxes: [] }),
   ]);
 
   return (
@@ -42,7 +47,13 @@ export async function ListingPage({
       </div>
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        <FilterSidebar makes={options.makes} fuelTypes={options.fuelTypes} />
+        {showFilters && (
+          <FilterSidebar
+            makes={options.makes}
+            fuelTypes={options.fuelTypes}
+            gearboxes={options.gearboxes}
+          />
+        )}
         <AuctionGrid
           initialAuctions={auctions.map((auction) => toCardData(auction, locale))}
           initialHasMore={hasMore}

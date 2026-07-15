@@ -38,7 +38,7 @@ export function AuctionCard({ auction }: AuctionCardProps) {
   return (
     <Link
       href={`/oksjon/${auction.slug}`}
-      className="group overflow-hidden rounded-lg border border-border bg-surface transition-colors hover:border-primary/60"
+      className="group overflow-hidden rounded-md border border-border bg-surface transition-all duration-200 hover:-translate-y-1 hover:border-primary/60 hover:shadow-lg"
     >
       <div className="relative aspect-[4/3] overflow-hidden bg-header">
         {auction.imageUrl ? (

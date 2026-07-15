@@ -11,6 +11,7 @@ import {
   Users,
   Settings,
   Languages,
+  FileText,
   LogOut,
   ExternalLink,
   Menu,
@@ -23,12 +24,19 @@ const NAV = [
   { href: "/admin", label: "Töölaud", icon: LayoutDashboard, exact: true },
   { href: "/admin/oksjonid", label: "Oksjonid", icon: Gavel },
   { href: "/admin/telefonoksjon", label: "Telefonioksjonid", icon: Phone },
+  { href: "/admin/arved", label: "Arved", icon: FileText },
   { href: "/admin/kasutajad", label: "Kasutajad", icon: Users },
   { href: "/admin/toolk", label: "Tõlked", icon: Languages },
   { href: "/admin/seaded", label: "Seaded", icon: Settings },
 ];
 
-export function AdminSidebar({ userName }: { userName: string }) {
+export function AdminSidebar({
+  userName,
+  logoUrl,
+}: {
+  userName: string;
+  logoUrl?: string | null;
+}) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
@@ -82,7 +90,9 @@ export function AdminSidebar({ userName }: { userName: string }) {
     <>
       {/* Mobile top bar */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-14 items-center justify-between border-b border-border bg-header px-4 lg:hidden">
-        <Logo className="!text-lg" />
+        <Link href="/" title="Avalehele">
+          <Logo className="!text-lg" imageUrl={logoUrl} />
+        </Link>
         <button onClick={() => setOpen(!open)} className="cursor-pointer" aria-label="Menüü">
           {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         </button>
@@ -97,7 +107,9 @@ export function AdminSidebar({ userName }: { userName: string }) {
         )}
       >
         <div className="hidden items-center border-b border-border p-4 lg:flex">
-          <Logo className="!text-xl" />
+          <Link href="/" title="Avalehele" className="transition-opacity hover:opacity-80">
+            <Logo className="!text-xl" imageUrl={logoUrl} />
+          </Link>
         </div>
         {nav}
         {footer}

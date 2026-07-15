@@ -40,6 +40,14 @@ export async function runSeed(db: PrismaClient): Promise<string[]> {
     partner_bta_url: "",
     partner_gjensidige_url: "",
     partner_seesam_url: "",
+    business_vat_no: "",
+    bank_name: "",
+    bank_iban: "",
+    bank_bic: "",
+    invoice_default_vat: "0",
+    invoice_due_days: "7",
+    invoice_note:
+      "Palume arve tasuda maksetähtajaks. Maksekorralduse selgitusse märkida arve number.",
   };
   for (const [key, value] of Object.entries(settings)) {
     await db.siteSettings.upsert({

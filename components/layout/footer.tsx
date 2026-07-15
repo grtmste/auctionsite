@@ -7,11 +7,13 @@ export async function Footer() {
   const t = await getTranslations();
   const settings = await getSettings();
 
-  // Insurance partners: BTA, Gjensidige and Seesam (logos imported from romu.ee)
+  // Insurance partners: BTA, Gjensidige and Seesam (logos imported from romu.ee).
+  // Per-brand height keeps visual weight even despite different source aspect
+  // ratios (BTA and Seesam artwork is smaller than Gjensidige).
   const partners = [
-    { name: "BTA", logoUrl: settings.partner_bta_url || null },
-    { name: "Gjensidige", logoUrl: settings.partner_gjensidige_url || null },
-    { name: "Seesam", logoUrl: settings.partner_seesam_url || null },
+    { name: "BTA", logoUrl: settings.partner_bta_url || null, size: "max-h-12" },
+    { name: "Gjensidige", logoUrl: settings.partner_gjensidige_url || null, size: "max-h-7" },
+    { name: "Seesam", logoUrl: settings.partner_seesam_url || null, size: "max-h-12" },
   ];
 
   return (
@@ -99,14 +101,14 @@ export async function Footer() {
             {partners.map((partner) => (
               <div
                 key={partner.name}
-                className="flex h-14 items-center justify-center rounded border border-border bg-surface px-4"
+                className="flex h-16 items-center justify-center rounded-md border border-border bg-surface px-4 transition-shadow hover:shadow-sm"
               >
                 {partner.logoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={partner.logoUrl}
                     alt={partner.name}
-                    className="max-h-9 w-auto max-w-full"
+                    className={`${partner.size} w-auto max-w-full object-contain`}
                   />
                 ) : (
                   <span className="text-sm font-semibold text-muted">{partner.name}</span>

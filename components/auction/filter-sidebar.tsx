@@ -12,11 +12,13 @@ import { Select } from "@/components/ui/select";
 interface FilterSidebarProps {
   makes: string[];
   fuelTypes: string[];
+  gearboxes: string[];
 }
 
-export function FilterSidebar({ makes, fuelTypes }: FilterSidebarProps) {
+export function FilterSidebar({ makes, fuelTypes, gearboxes }: FilterSidebarProps) {
   const t = useTranslations("auctions");
   const tCommon = useTranslations("common");
+  const tAuction = useTranslations("auction");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -26,7 +28,15 @@ export function FilterSidebar({ makes, fuelTypes }: FilterSidebarProps) {
 
   function apply(formData: FormData) {
     const params = new URLSearchParams();
-    for (const key of ["make", "fuelType", "yearFrom", "yearTo", "priceFrom", "priceTo"]) {
+    for (const key of [
+      "make",
+      "fuelType",
+      "gearbox",
+      "yearFrom",
+      "yearTo",
+      "priceFrom",
+      "priceTo",
+    ]) {
       const value = String(formData.get(key) ?? "").trim();
       if (value) params.set(key, value);
     }
@@ -59,6 +69,17 @@ export function FilterSidebar({ makes, fuelTypes }: FilterSidebarProps) {
           {fuelTypes.map((fuel) => (
             <option key={fuel} value={fuel}>
               {fuel}
+            </option>
+          ))}
+        </Select>
+      </div>
+      <div>
+        <Label htmlFor="filter-gearbox">{tAuction("gearbox")}</Label>
+        <Select id="filter-gearbox" name="gearbox" defaultValue={get("gearbox")}>
+          <option value="">{tCommon("all")}</option>
+          {gearboxes.map((gearbox) => (
+            <option key={gearbox} value={gearbox}>
+              {gearbox}
             </option>
           ))}
         </Select>

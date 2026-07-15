@@ -186,3 +186,31 @@ model SiteSettings {
   key   String @unique
   value String @db.Text
 }
+
+model Invoice {
+  id           String        @id @default(cuid())
+  number       String        @unique
+  auctionId    String?
+  userId       String?
+  buyerName    String
+  buyerEmail   String?
+  buyerPhone   String?
+  buyerCompany String?
+  buyerRegCode String?
+  buyerAddress String?
+  issueDate    DateTime      @default(now())
+  dueDate      DateTime
+  lines        Json // [{description, qty, unit, unitPrice, vatRate}]
+  notes        String?
+  status       InvoiceStatus @default(UNPAID)
+  createdBy    String
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+enum InvoiceStatus {
+  DRAFT
+  UNPAID
+  PAID
+  CANCELLED
+}

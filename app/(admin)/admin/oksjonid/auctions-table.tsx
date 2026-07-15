@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Pencil, Trash2, ExternalLink } from "lucide-react";
+import { Pencil, Trash2, ExternalLink, FileText } from "lucide-react";
 import { StatusChip } from "@/components/admin/status-chip";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -94,6 +94,13 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </Link>
+                  {(auction.status === "SOLD" || auction.status === "ENDED") && (
+                    <Link href={`/admin/arved/uus?auctionId=${auction.id}`}>
+                      <Button variant="ghost" size="icon" title="Loo arve võitjale">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </Button>
+                    </Link>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
