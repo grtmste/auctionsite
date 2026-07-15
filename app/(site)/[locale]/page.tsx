@@ -25,7 +25,7 @@ export default async function HomePage({
   let activeAuctions: ReturnType<typeof toCardData>[] = [];
   try {
     const rows = await db.auction.findMany({
-      where: { status: "ACTIVE" },
+      where: { status: "ACTIVE", hiddenFromPublic: false },
       orderBy: { auctionEnd: "asc" },
       take: 6,
       include: {

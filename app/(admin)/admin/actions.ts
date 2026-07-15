@@ -204,6 +204,15 @@ export async function relistAuction(id: string) {
   return { ok: true as const, id: created.id };
 }
 
+/** Show/hide an auction on the public site (listings + homepage). */
+export async function setAuctionHidden(id: string, hidden: boolean) {
+  await requireAdmin();
+  await db.auction.update({ where: { id }, data: { hiddenFromPublic: hidden } });
+  revalidatePath("/admin/oksjonid");
+  revalidatePath("/");
+  return { ok: true as const };
+}
+
 export async function deleteAuction(id: string) {
   await requireAdmin();
   await db.$transaction([

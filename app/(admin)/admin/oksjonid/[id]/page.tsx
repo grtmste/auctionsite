@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/admin/status-chip";
 import { BidOverview } from "@/components/admin/bid-overview";
 import { RelistButton } from "@/components/admin/relist-button";
+import { HideToggle } from "@/components/admin/hide-toggle";
 
 export const dynamic = "force-dynamic";
 
@@ -73,9 +74,10 @@ export default async function AdminAuctionOverviewPage({
 
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <div className="mb-2 flex items-center gap-3">
+          <div className="mb-2 flex flex-wrap items-center gap-3">
             <h1 className="text-2xl font-bold">{localized(auction.title, "et")}</h1>
             <StatusChip status={auction.status} />
+            {auction.hiddenFromPublic && <Badge variant="muted">Peidetud</Badge>}
           </div>
           <p className="text-sm text-muted">
             {auction.make} {auction.model}
@@ -113,6 +115,7 @@ export default async function AdminAuctionOverviewPage({
             </Link>
           )}
           <RelistButton auctionId={auction.id} />
+          <HideToggle auctionId={auction.id} hidden={auction.hiddenFromPublic} />
         </div>
       </div>
 

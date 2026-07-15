@@ -2,8 +2,17 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Pencil, Trash2, ExternalLink, FileText, ListChecks } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  ExternalLink,
+  FileText,
+  ListChecks,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { StatusChip } from "@/components/admin/status-chip";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import {
@@ -14,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { deleteAuction } from "../actions";
+import { deleteAuction, setAuctionHidden } from "../actions";
 import { RelistButton } from "@/components/admin/relist-button";
 import type { AuctionStatus, AuctionType } from "@prisma/client";
 
@@ -27,6 +36,7 @@ interface Row {
   price: string;
   bidCount: number;
   vendor: string | null;
+  hiddenFromPublic: boolean;
   auctionEnd: string;
 }
 
@@ -48,6 +58,10 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
       await deleteAuction(confirmId);
       setConfirmId(null);
     });
+  }
+
+  function toggleHidden(id: string, hidden: boolean) {
+    startTransition(() => setAuctionHidden(id, hidden).then(() => {}));
   }
 
   return (
@@ -82,6 +96,11 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
                 >
                   {auction.title}
                 </Link>
+                {auction.hiddenFromPublic && (
+                  <Badge variant="muted" className="ml-2 align-middle">
+                    Peidetud
+                  </Badge>
+                )}
               </TableCell>
               <TableCell>{TYPE_LABELS[auction.auctionType]}</TableCell>
               <TableCell className="text-muted">{auction.vendor ?? "—"}</TableCell>
@@ -108,6 +127,23 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
                       <Pencil className="h-4 w-4" />
                     </Button>
                   </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    title={
+                      auction.hiddenFromPublic
+                        ? "Kuva avalikul lehel"
+                        : "Peida avalikult lehelt"
+                    }
+                    disabled={pending}
+                    onClick={() => toggleHidden(auction.id, !auction.hiddenFromPublic)}
+                  >
+                    {auction.hiddenFromPublic ? (
+                      <EyeOff className="h-4 w-4 text-primary" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
                   {(auction.status === "SOLD" || auction.status === "ENDED") && (
                     <Link href={`/admin/arved/uus?auctionId=${auction.id}`}>
                       <Button variant="ghost" size="icon" title="Loo arve võitjale">

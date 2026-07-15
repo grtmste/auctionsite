@@ -44,6 +44,7 @@ export function parseFilters(params: Record<string, string | undefined>): Auctio
 function buildWhere(filters: AuctionFilters): Prisma.AuctionWhereInput {
   const where: Prisma.AuctionWhereInput = {
     status: { in: STATUS_ORDER },
+    hiddenFromPublic: false,
   };
   if (filters.auctionType) where.auctionType = filters.auctionType;
   if (filters.make) where.make = { equals: filters.make, mode: "insensitive" };
@@ -129,6 +130,7 @@ export async function listAuctions(filters: AuctionFilters) {
 export async function getFilterOptions(auctionType?: AuctionType) {
   const where: Prisma.AuctionWhereInput = {
     status: { in: STATUS_ORDER },
+    hiddenFromPublic: false,
     ...(auctionType ? { auctionType } : {}),
   };
   const [makes, fuels, gearboxRows] = await Promise.all([

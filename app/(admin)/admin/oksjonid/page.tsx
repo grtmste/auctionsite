@@ -46,6 +46,7 @@ export default async function AdminAuctionsPage({
     price: formatCurrency(auction.finalPrice ?? auction.currentBid ?? auction.startingPrice),
     bidCount: auction._count.bids + auction._count.phoneBids,
     vendor: auction.vendor?.company || auction.vendor?.name || null,
+    hiddenFromPublic: auction.hiddenFromPublic,
     auctionEnd: formatDateTime(auction.auctionEnd),
   }));
 

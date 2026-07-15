@@ -105,6 +105,7 @@ model Auction {
   phoneAuctionEnd    DateTime?
   reserveMet         Boolean        @default(false)
   finalPrice         Float?
+  hiddenFromPublic   Boolean        @default(false) // admin can hide (e.g. ended auctions) from public listings
   vendorId           String?
   vendor             User?          @relation("VendorAuctions", fields: [vendorId], references: [id], onDelete: SetNull)
   relistedFromId     String?
