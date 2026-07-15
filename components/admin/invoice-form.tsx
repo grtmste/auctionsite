@@ -22,6 +22,8 @@ export interface InvoiceFormValues {
   buyerPhone: string;
   buyerCompany: string;
   buyerRegCode: string;
+  buyerVatNo: string;
+  buyerPersonalId: string;
   buyerAddress: string;
   issueDate: string; // yyyy-mm-dd
   dueDate: string;
@@ -90,6 +92,8 @@ export function InvoiceForm({ initial }: { initial: InvoiceFormValues }) {
       buyerPhone: form.buyerPhone || null,
       buyerCompany: form.buyerCompany || null,
       buyerRegCode: form.buyerRegCode || null,
+      buyerVatNo: form.buyerVatNo || null,
+      buyerPersonalId: form.buyerPersonalId || null,
       buyerAddress: form.buyerAddress || null,
       issueDate: new Date(form.issueDate).toISOString(),
       dueDate: new Date(form.dueDate).toISOString(),
@@ -171,9 +175,11 @@ export function InvoiceForm({ initial }: { initial: InvoiceFormValues }) {
         <div className="grid gap-4 sm:grid-cols-2">
           {field("Nimi *", "buyerName")}
           {field("Ettevõte", "buyerCompany")}
-          {field("Reg / isikukood", "buyerRegCode")}
-          {field("E-post", "buyerEmail", { type: "email" })}
+          {field("Registrikood", "buyerRegCode")}
+          {field("KMKR (VAT nr)", "buyerVatNo")}
+          {field("Isikukood", "buyerPersonalId")}
           {field("Telefon", "buyerPhone")}
+          {field("E-post", "buyerEmail", { type: "email" })}
           {field("Aadress", "buyerAddress")}
         </div>
       </section>

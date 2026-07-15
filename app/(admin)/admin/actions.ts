@@ -227,12 +227,20 @@ export async function setUserRole(userId: string, role: Role) {
   return { ok: true };
 }
 
-const createUserSchema = z.object({
+const userDetailsSchema = {
   name: z.string().min(1),
   email: z.string().email(),
   phone: z.string().optional(),
   company: z.string().optional(),
+  regCode: z.string().optional(),
+  vatNo: z.string().optional(),
+  personalId: z.string().optional(),
+  address: z.string().optional(),
   role: z.enum(["USER", "VENDOR", "ADMIN"]),
+};
+
+const createUserSchema = z.object({
+  ...userDetailsSchema,
   password: z.string().min(8),
 });
 
@@ -251,6 +259,10 @@ export async function createUser(input: z.infer<typeof createUserSchema>) {
       email,
       phone: data.phone?.trim() || null,
       company: data.company?.trim() || null,
+      regCode: data.regCode?.trim() || null,
+      vatNo: data.vatNo?.trim() || null,
+      personalId: data.personalId?.trim() || null,
+      address: data.address?.trim() || null,
       role: data.role as Role,
       passwordHash: await bcrypt.hash(data.password, 12),
       // Admin-created accounts are considered verified.
@@ -263,11 +275,7 @@ export async function createUser(input: z.infer<typeof createUserSchema>) {
 
 const updateUserSchema = z.object({
   id: z.string().min(1),
-  name: z.string().min(1),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  company: z.string().optional(),
-  role: z.enum(["USER", "VENDOR", "ADMIN"]),
+  ...userDetailsSchema,
   // Optional: only set when the admin wants to reset the password.
   password: z.string().min(8).optional().or(z.literal("")),
 });
@@ -296,6 +304,10 @@ export async function updateUser(input: z.infer<typeof updateUserSchema>) {
       email,
       phone: data.phone?.trim() || null,
       company: data.company?.trim() || null,
+      regCode: data.regCode?.trim() || null,
+      vatNo: data.vatNo?.trim() || null,
+      personalId: data.personalId?.trim() || null,
+      address: data.address?.trim() || null,
       role: data.role as Role,
       ...(data.password
         ? { passwordHash: await bcrypt.hash(data.password, 12) }
@@ -822,6 +834,8 @@ const invoiceSchema = z.object({
   buyerPhone: z.string().nullable().optional(),
   buyerCompany: z.string().nullable().optional(),
   buyerRegCode: z.string().nullable().optional(),
+  buyerVatNo: z.string().nullable().optional(),
+  buyerPersonalId: z.string().nullable().optional(),
   buyerAddress: z.string().nullable().optional(),
   issueDate: z.string(),
   dueDate: z.string(),
@@ -845,6 +859,8 @@ export async function saveInvoice(input: InvoiceInput) {
     buyerPhone: data.buyerPhone?.trim() || null,
     buyerCompany: data.buyerCompany?.trim() || null,
     buyerRegCode: data.buyerRegCode?.trim() || null,
+    buyerVatNo: data.buyerVatNo?.trim() || null,
+    buyerPersonalId: data.buyerPersonalId?.trim() || null,
     buyerAddress: data.buyerAddress?.trim() || null,
     issueDate: new Date(data.issueDate),
     dueDate: new Date(data.dueDate),

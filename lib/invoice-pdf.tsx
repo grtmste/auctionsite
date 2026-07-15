@@ -180,6 +180,10 @@ function InvoiceDocument({
             <Text style={styles.partyName}>{invoice.buyerName}</Text>
             {invoice.buyerCompany ? <Text>{invoice.buyerCompany}</Text> : null}
             {invoice.buyerRegCode ? <Text>Reg nr: {invoice.buyerRegCode}</Text> : null}
+            {invoice.buyerVatNo ? <Text>KMKR: {invoice.buyerVatNo}</Text> : null}
+            {invoice.buyerPersonalId ? (
+              <Text>Isikukood: {invoice.buyerPersonalId}</Text>
+            ) : null}
             {invoice.buyerAddress ? <Text>{invoice.buyerAddress}</Text> : null}
             {invoice.buyerEmail ? <Text>{invoice.buyerEmail}</Text> : null}
             {invoice.buyerPhone ? <Text>{invoice.buyerPhone}</Text> : null}

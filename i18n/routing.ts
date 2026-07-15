@@ -8,4 +8,7 @@ export const routing = defineRouting({
   defaultLocale: "et",
   // Estonian has no URL prefix, other languages use /en, /ru, /lv, /lt
   localePrefix: "as-needed",
+  // Always open in Estonian; do not auto-switch based on the browser's
+  // Accept-Language header.
+  localeDetection: false,
 });

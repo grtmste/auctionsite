@@ -28,6 +28,8 @@ export default async function EditInvoicePage({
     buyerPhone: invoice.buyerPhone ?? "",
     buyerCompany: invoice.buyerCompany ?? "",
     buyerRegCode: invoice.buyerRegCode ?? "",
+    buyerVatNo: invoice.buyerVatNo ?? "",
+    buyerPersonalId: invoice.buyerPersonalId ?? "",
     buyerAddress: invoice.buyerAddress ?? "",
     issueDate: isoDate(invoice.issueDate),
     dueDate: isoDate(invoice.dueDate),

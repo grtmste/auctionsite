@@ -7,14 +7,7 @@ import { ChevronDown } from "lucide-react";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { locales, type Locale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
-
-const FLAGS: Record<Locale, string> = {
-  et: "🇪🇪",
-  en: "🇬🇧",
-  ru: "🇷🇺",
-  lv: "🇱🇻",
-  lt: "🇱🇹",
-};
+import { Flag } from "./flag";
 
 const LABELS: Record<Locale, string> = {
   et: "Eesti",
@@ -58,7 +51,7 @@ export function LanguageSwitcher() {
         aria-expanded={open}
         aria-label="Vali keel"
       >
-        <span className="text-base leading-none">{FLAGS[locale]}</span>
+        <Flag locale={locale} />
         <span className="hidden font-medium uppercase sm:inline">{locale}</span>
         <ChevronDown
           className={cn("h-3.5 w-3.5 text-muted transition-transform", open && "rotate-180")}
@@ -81,7 +74,7 @@ export function LanguageSwitcher() {
                 role="option"
                 aria-selected={locale === l}
               >
-                <span className="text-base leading-none">{FLAGS[l]}</span>
+                <Flag locale={l} />
                 {LABELS[l]}
               </button>
             </li>

@@ -33,6 +33,8 @@ export default async function NewInvoicePage({
     buyerPhone: "",
     buyerCompany: "",
     buyerRegCode: "",
+    buyerVatNo: "",
+    buyerPersonalId: "",
     buyerAddress: "",
     issueDate: isoDate(today),
     dueDate: isoDate(due),
@@ -72,10 +74,20 @@ export default async function NewInvoicePage({
       // overview (e.g. to invoice a runner-up when the winner backs out);
       // otherwise fall back to the highest bidder.
       let buyerName = "";
-      let buyerEmail = "";
       let buyerPhone = "";
-      let buyerCompany = "";
-      let buyerUserId: string | null = null;
+      // Buyer account (when the bidder has one) carries the full company /
+      // personal details we want on the invoice.
+      let buyerUser: {
+        id: string;
+        name: string | null;
+        email: string;
+        phone: string | null;
+        company: string | null;
+        regCode: string | null;
+        vatNo: string | null;
+        personalId: string | null;
+        address: string | null;
+      } | null = null;
       let price = 0;
 
       if (webBidId) {
@@ -84,11 +96,8 @@ export default async function NewInvoicePage({
           include: { user: true },
         });
         if (bid) {
-          buyerUserId = bid.user.id;
+          buyerUser = bid.user;
           buyerName = bid.user.name ?? bid.user.email;
-          buyerEmail = bid.user.email;
-          buyerPhone = bid.user.phone ?? "";
-          buyerCompany = bid.user.company ?? "";
           price = bid.amount;
         }
       } else if (phoneBidId) {
@@ -96,14 +105,11 @@ export default async function NewInvoicePage({
           where: { id: phoneBidId, auctionId: auction.id },
         });
         if (bid) {
-          const linked = bid.bidderUserId
+          buyerUser = bid.bidderUserId
             ? await db.user.findUnique({ where: { id: bid.bidderUserId } })
             : null;
-          buyerUserId = linked?.id ?? null;
-          buyerName = linked?.name ?? bid.bidderName;
-          buyerEmail = linked?.email ?? "";
-          buyerPhone = linked?.phone ?? bid.bidderPhone ?? "";
-          buyerCompany = linked?.company ?? "";
+          buyerName = buyerUser?.name ?? bid.bidderName;
+          buyerPhone = buyerUser?.phone ?? bid.bidderPhone ?? "";
           price = bid.amount;
         }
       }
@@ -117,17 +123,14 @@ export default async function NewInvoicePage({
           auction.finalPrice ??
           (Math.max(topWeb?.amount ?? 0, topPhone?.amount ?? 0) ||
             auction.startingPrice);
-        const winnerUser = phoneWins
+        buyerUser = phoneWins
           ? topPhone?.bidderUserId
             ? await db.user.findUnique({ where: { id: topPhone.bidderUserId } })
             : null
           : topWeb?.user ?? null;
-        buyerUserId = winnerUser?.id ?? null;
-        buyerName = winnerUser?.name ?? (phoneWins ? topPhone?.bidderName ?? "" : "");
-        buyerEmail = winnerUser?.email ?? "";
+        buyerName = buyerUser?.name ?? (phoneWins ? topPhone?.bidderName ?? "" : "");
         buyerPhone =
-          winnerUser?.phone ?? (phoneWins ? topPhone?.bidderPhone ?? "" : "");
-        buyerCompany = winnerUser?.company ?? "";
+          buyerUser?.phone ?? (phoneWins ? topPhone?.bidderPhone ?? "" : "");
       }
 
       const line: InvoiceLine = {
@@ -139,11 +142,15 @@ export default async function NewInvoicePage({
       };
 
       base.auctionId = auction.id;
-      base.userId = buyerUserId;
+      base.userId = buyerUser?.id ?? null;
       base.buyerName = buyerName;
-      base.buyerEmail = buyerEmail;
-      base.buyerPhone = buyerPhone;
-      base.buyerCompany = buyerCompany;
+      base.buyerEmail = buyerUser?.email ?? "";
+      base.buyerPhone = buyerUser?.phone ?? buyerPhone;
+      base.buyerCompany = buyerUser?.company ?? "";
+      base.buyerRegCode = buyerUser?.regCode ?? "";
+      base.buyerVatNo = buyerUser?.vatNo ?? "";
+      base.buyerPersonalId = buyerUser?.personalId ?? "";
+      base.buyerAddress = buyerUser?.address ?? "";
       base.lines = [line];
     }
   }

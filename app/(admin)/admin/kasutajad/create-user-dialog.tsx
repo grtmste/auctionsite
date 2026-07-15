@@ -15,6 +15,10 @@ const EMPTY = {
   email: "",
   phone: "",
   company: "",
+  regCode: "",
+  vatNo: "",
+  personalId: "",
+  address: "",
   role: "VENDOR" as "USER" | "VENDOR" | "ADMIN",
   password: "",
 };
@@ -96,13 +100,47 @@ export function CreateUserDialog() {
               />
             </div>
             <div>
-              <Label htmlFor="cu-company">Ettevõte</Label>
+              <Label htmlFor="cu-personalId">Isikukood</Label>
               <Input
-                id="cu-company"
-                value={form.company}
-                onChange={(e) => set("company", e.target.value)}
+                id="cu-personalId"
+                value={form.personalId}
+                onChange={(e) => set("personalId", e.target.value)}
               />
             </div>
+          </div>
+          <div>
+            <Label htmlFor="cu-company">Ettevõte</Label>
+            <Input
+              id="cu-company"
+              value={form.company}
+              onChange={(e) => set("company", e.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="cu-regCode">Registrikood</Label>
+              <Input
+                id="cu-regCode"
+                value={form.regCode}
+                onChange={(e) => set("regCode", e.target.value)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="cu-vatNo">KMKR (VAT nr)</Label>
+              <Input
+                id="cu-vatNo"
+                value={form.vatNo}
+                onChange={(e) => set("vatNo", e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="cu-address">Aadress</Label>
+            <Input
+              id="cu-address"
+              value={form.address}
+              onChange={(e) => set("address", e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor="cu-role">Roll</Label>

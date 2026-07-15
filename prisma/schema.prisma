@@ -14,6 +14,10 @@ model User {
   name          String?
   phone         String?
   company       String?
+  personalId    String? // isikukood
+  regCode       String? // company registry code
+  vatNo         String? // KMKR / VAT number
+  address       String?
   role          Role      @default(USER)
   disabled      Boolean   @default(false)
   passwordHash  String?
@@ -204,6 +208,8 @@ model Invoice {
   buyerPhone   String?
   buyerCompany String?
   buyerRegCode String?
+  buyerVatNo   String? // KMKR / VAT number
+  buyerPersonalId String? // isikukood
   buyerAddress String?
   issueDate    DateTime      @default(now())
   dueDate      DateTime

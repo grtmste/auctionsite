@@ -16,6 +16,10 @@ export interface EditableUser {
   email: string;
   phone: string;
   company: string;
+  regCode: string;
+  vatNo: string;
+  personalId: string;
+  address: string;
   role: Role;
   isSelf: boolean;
 }
@@ -35,6 +39,10 @@ export function EditUserDialog({
     email: user.email,
     phone: user.phone,
     company: user.company,
+    regCode: user.regCode,
+    vatNo: user.vatNo,
+    personalId: user.personalId,
+    address: user.address,
     role: user.role,
     password: "",
   });
@@ -96,13 +104,47 @@ export function EditUserDialog({
             <Input id="eu-phone" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="eu-company">Ettevõte</Label>
+            <Label htmlFor="eu-personalId">Isikukood</Label>
             <Input
-              id="eu-company"
-              value={form.company}
-              onChange={(e) => set("company", e.target.value)}
+              id="eu-personalId"
+              value={form.personalId}
+              onChange={(e) => set("personalId", e.target.value)}
             />
           </div>
+        </div>
+        <div>
+          <Label htmlFor="eu-company">Ettevõte</Label>
+          <Input
+            id="eu-company"
+            value={form.company}
+            onChange={(e) => set("company", e.target.value)}
+          />
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <Label htmlFor="eu-regCode">Registrikood</Label>
+            <Input
+              id="eu-regCode"
+              value={form.regCode}
+              onChange={(e) => set("regCode", e.target.value)}
+            />
+          </div>
+          <div>
+            <Label htmlFor="eu-vatNo">KMKR (VAT nr)</Label>
+            <Input
+              id="eu-vatNo"
+              value={form.vatNo}
+              onChange={(e) => set("vatNo", e.target.value)}
+            />
+          </div>
+        </div>
+        <div>
+          <Label htmlFor="eu-address">Aadress</Label>
+          <Input
+            id="eu-address"
+            value={form.address}
+            onChange={(e) => set("address", e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="eu-role">Roll</Label>

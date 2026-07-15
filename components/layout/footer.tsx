@@ -13,7 +13,7 @@ export async function Footer() {
   const partners = [
     { name: "BTA", logoUrl: settings.partner_bta_url || null, size: "max-h-12" },
     { name: "Gjensidige", logoUrl: settings.partner_gjensidige_url || null, size: "max-h-7" },
-    { name: "Seesam", logoUrl: settings.partner_seesam_url || null, size: "max-h-12" },
+    { name: "Seesam", logoUrl: settings.partner_seesam_url || null, size: "max-h-14" },
   ];
 
   return (

@@ -35,6 +35,10 @@ interface Row {
   email: string;
   phone: string;
   company: string;
+  regCode: string;
+  vatNo: string;
+  personalId: string;
+  address: string;
   registered: string;
   role: Role;
   verified: boolean;
@@ -161,6 +165,10 @@ export function UsersTable({ users }: { users: Row[] }) {
             email: editing.email,
             phone: editing.phone,
             company: editing.company,
+            regCode: editing.regCode,
+            vatNo: editing.vatNo,
+            personalId: editing.personalId,
+            address: editing.address,
             role: editing.role,
             isSelf: editing.isSelf,
           }}
