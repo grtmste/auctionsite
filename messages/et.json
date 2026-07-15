@@ -120,7 +120,8 @@
     "reserveNotMet": "Alghind ei täitunud",
     "channel": "Kanal",
     "channelWeb": "Veeb",
-    "channelPhone": "Telefon"
+    "channelPhone": "Telefon",
+    "editProduct": "Muuda toodet"
   },
   "bid": {
     "placeBid": "Tee pakkumine",

@@ -1,6 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
+import { translateAttrValue } from "@/lib/attribute-i18n";
 
 export interface AuctionAttributes {
   vatPercent: number;
@@ -26,6 +27,8 @@ export interface AuctionAttributes {
 /** Vehicle specifications table, structured exactly like romu.ee */
 export function AttributesTable({ attributes }: { attributes: AuctionAttributes }) {
   const t = useTranslations("auction");
+  const locale = useLocale();
+  const tr = (value: string | null | undefined) => translateAttrValue(value, locale);
 
   const typeLabel = {
     REGULAR: t("typeRegular"),
@@ -40,7 +43,7 @@ export function AttributesTable({ attributes }: { attributes: AuctionAttributes 
     [t("firstReg"), attributes.firstRegDate],
     [t("regNumber"), attributes.regNumber],
     [t("vin"), attributes.vinCode],
-    [t("fuelType"), attributes.fuelType],
+    [t("fuelType"), tr(attributes.fuelType)],
     [
       t("engineVolume"),
       attributes.engineVolume != null ? `${attributes.engineVolume} L` : null,
@@ -49,18 +52,18 @@ export function AttributesTable({ attributes }: { attributes: AuctionAttributes 
       t("enginePower"),
       attributes.enginePower != null ? `${attributes.enginePower} kW` : null,
     ],
-    [t("gearbox"), attributes.gearbox],
-    [t("drivenAxle"), attributes.drivenAxle],
+    [t("gearbox"), tr(attributes.gearbox)],
+    [t("drivenAxle"), tr(attributes.drivenAxle)],
     [
       t("odometer"),
       attributes.odometer != null
         ? `${new Intl.NumberFormat("et-EE").format(attributes.odometer)} km`
         : null,
     ],
-    [t("climate"), attributes.climateControl],
+    [t("climate"), tr(attributes.climateControl)],
     [t("seats"), attributes.seats != null ? String(attributes.seats) : null],
-    [t("color"), attributes.color],
-    [t("condition"), attributes.condition],
+    [t("color"), tr(attributes.color)],
+    [t("condition"), tr(attributes.condition)],
     [t("auctionType"), typeLabel],
   ];
 
@@ -100,7 +103,7 @@ export function AttributesTable({ attributes }: { attributes: AuctionAttributes 
                   className={index % 2 === 0 ? "bg-surface" : "bg-background"}
                 >
                   <td className="w-1/2 px-4 py-2.5 text-muted">{attribute.key}</td>
-                  <td className="px-4 py-2.5 font-medium">{attribute.value}</td>
+                  <td className="px-4 py-2.5 font-medium">{tr(attribute.value)}</td>
                 </tr>
               ))}
             </tbody>

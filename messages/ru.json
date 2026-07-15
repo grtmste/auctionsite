@@ -120,7 +120,8 @@
     "reserveNotMet": "Резервная цена не достигнута",
     "channel": "Канал",
     "channelWeb": "Веб",
-    "channelPhone": "Телефон"
+    "channelPhone": "Телефон",
+    "editProduct": "Редактировать товар"
   },
   "bid": {
     "placeBid": "Сделать ставку",

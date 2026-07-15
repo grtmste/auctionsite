@@ -120,7 +120,8 @@
     "reserveNotMet": "Reserve not met",
     "channel": "Channel",
     "channelWeb": "Web",
-    "channelPhone": "Phone"
+    "channelPhone": "Phone",
+    "editProduct": "Edit product"
   },
   "bid": {
     "placeBid": "Place bid",

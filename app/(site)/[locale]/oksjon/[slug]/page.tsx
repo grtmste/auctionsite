@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import { Pencil } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { getAuctionBySlug } from "@/lib/auctions";
 import { runStatusTransitions } from "@/lib/auction-status";
@@ -39,6 +42,9 @@ export default async function AuctionPage({
 
   if (!auction || auction.status === "DRAFT") notFound();
 
+  const isAdmin = session?.user?.role === "ADMIN";
+  const t = await getTranslations("auction");
+
   const title = localized(auction.title, locale);
   const description = localized(auction.description, locale);
 
@@ -57,6 +63,17 @@ export default async function AuctionPage({
       {auction.status === "PHONE_AUCTION" && <PhoneAuctionBanner />}
 
       <div className="mx-auto max-w-7xl px-4 py-8">
+        {isAdmin && (
+          <div className="mb-4 flex justify-end">
+            <Link
+              href={`/admin/oksjonid/${auction.id}/muuda`}
+              className="inline-flex items-center gap-2 rounded-md border border-primary/40 bg-primary/10 px-3 py-1.5 text-sm font-medium text-primary transition hover:bg-primary hover:text-white"
+            >
+              <Pencil className="h-4 w-4" />
+              {t("editProduct")}
+            </Link>
+          </div>
+        )}
         <h1 className="mb-6 text-2xl font-bold md:text-3xl">{title}</h1>
 
         <div className="grid gap-8 lg:grid-cols-5">

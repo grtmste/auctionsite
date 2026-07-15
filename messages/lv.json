@@ -120,7 +120,8 @@
     "reserveNotMet": "Rezerves cena nav sasniegta",
     "channel": "Kanāls",
     "channelWeb": "Tīmeklis",
-    "channelPhone": "Telefons"
+    "channelPhone": "Telefons",
+    "editProduct": "Rediģēt produktu"
   },
   "bid": {
     "placeBid": "Izdarīt likmi",

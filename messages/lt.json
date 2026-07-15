@@ -120,7 +120,8 @@
     "reserveNotMet": "Rezervinė kaina nepasiekta",
     "channel": "Kanalas",
     "channelWeb": "Internetu",
-    "channelPhone": "Telefonu"
+    "channelPhone": "Telefonu",
+    "editProduct": "Redaguoti produktą"
   },
   "bid": {
     "placeBid": "Pateikti statymą",
