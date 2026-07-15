@@ -103,6 +103,9 @@ model Auction {
   finalPrice         Float?
   vendorId           String?
   vendor             User?          @relation("VendorAuctions", fields: [vendorId], references: [id], onDelete: SetNull)
+  relistedFromId     String?
+  relistedFrom       Auction?       @relation("Relist", fields: [relistedFromId], references: [id], onDelete: SetNull)
+  relists            Auction[]      @relation("Relist")
   images             AuctionImage[]
   bids               Bid[]
   phoneBids          PhoneBid[]

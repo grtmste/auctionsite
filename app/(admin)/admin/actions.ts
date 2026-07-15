@@ -129,6 +129,81 @@ export async function saveAuction(input: AuctionFormInput) {
   return { ok: true, id: auctionId };
 }
 
+/**
+ * Re-list an auction as a fresh DRAFT, copying the vehicle details and images
+ * but starting a new bid history. The previous auction is left untouched and
+ * linked via relistedFromId, so its bids/outcome remain viewable as history
+ * (e.g. when the reserve price was not met the first time round).
+ */
+export async function relistAuction(id: string) {
+  const admin = await requireAdmin();
+  const source = await db.auction.findUnique({
+    where: { id },
+    include: { images: { orderBy: { sortOrder: "asc" } } },
+  });
+  if (!source) return { ok: false as const, error: "NOT_FOUND" };
+
+  // Fresh unique slug based on the original.
+  const base = source.slug.replace(/-\d+$/, "");
+  let slug = `${base}-uus`;
+  let attempt = 1;
+  while (await db.auction.findUnique({ where: { slug } })) {
+    slug = `${base}-uus-${++attempt}`;
+  }
+
+  // Default a new one-week window; the admin adjusts it before publishing.
+  const start = new Date();
+  const end = new Date(start);
+  end.setDate(end.getDate() + 7);
+
+  const created = await db.auction.create({
+    data: {
+      slug,
+      status: "DRAFT",
+      auctionType: source.auctionType,
+      title: source.title as object,
+      description: (source.description as object) ?? {},
+      make: source.make,
+      model: source.model,
+      year: source.year,
+      firstRegDate: source.firstRegDate,
+      regNumber: source.regNumber,
+      vinCode: source.vinCode,
+      fuelType: source.fuelType,
+      engineVolume: source.engineVolume,
+      enginePower: source.enginePower,
+      gearbox: source.gearbox,
+      drivenAxle: source.drivenAxle,
+      odometer: source.odometer,
+      climateControl: source.climateControl,
+      seats: source.seats,
+      color: source.color,
+      condition: source.condition,
+      vatPercent: source.vatPercent,
+      customAttributes: (source.customAttributes as object) ?? [],
+      startingPrice: source.startingPrice,
+      bidIncrement: source.bidIncrement,
+      reservePrice: source.reservePrice,
+      auctionStart: start,
+      auctionEnd: end,
+      vendorId: source.vendorId,
+      relistedFromId: source.id,
+      createdBy: admin.id,
+      images: {
+        create: source.images.map((image, index) => ({
+          url: image.url,
+          thumbUrl: image.thumbUrl,
+          alt: image.alt,
+          sortOrder: index,
+        })),
+      },
+    },
+  });
+
+  revalidatePath("/admin/oksjonid");
+  return { ok: true as const, id: created.id };
+}
+
 export async function deleteAuction(id: string) {
   await requireAdmin();
   await db.$transaction([

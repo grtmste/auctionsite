@@ -1,6 +1,13 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, Pencil, ExternalLink, FileText, FileDown } from "lucide-react";
+import {
+  ArrowLeft,
+  Pencil,
+  ExternalLink,
+  FileText,
+  FileDown,
+  History,
+} from "lucide-react";
 import { db } from "@/lib/db";
 import { serializeStaffBids } from "@/lib/bids";
 import { computeTotals, parseLines } from "@/lib/invoices";
@@ -9,8 +16,23 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StatusChip } from "@/components/admin/status-chip";
 import { BidOverview } from "@/components/admin/bid-overview";
+import { RelistButton } from "@/components/admin/relist-button";
 
 export const dynamic = "force-dynamic";
+
+const ROUND_SELECT = {
+  id: true,
+  slug: true,
+  title: true,
+  status: true,
+  finalPrice: true,
+  currentBid: true,
+  startingPrice: true,
+  reservePrice: true,
+  reserveMet: true,
+  auctionEnd: true,
+  _count: { select: { bids: true, phoneBids: true } },
+} as const;
 
 export default async function AdminAuctionOverviewPage({
   params,
@@ -20,7 +42,11 @@ export default async function AdminAuctionOverviewPage({
   const { id } = await params;
   const auction = await db.auction.findUnique({
     where: { id },
-    include: { vendor: { select: { name: true, email: true, company: true } } },
+    include: {
+      vendor: { select: { name: true, email: true, company: true } },
+      relistedFrom: { select: ROUND_SELECT },
+      relists: { select: ROUND_SELECT, orderBy: { createdAt: "asc" } },
+    },
   });
   if (!auction) notFound();
 
@@ -86,8 +112,32 @@ export default async function AdminAuctionOverviewPage({
               </Button>
             </Link>
           )}
+          <RelistButton auctionId={auction.id} />
         </div>
       </div>
+
+      {/* Relist history: previous and follow-up rounds of this vehicle */}
+      {(auction.relistedFrom || auction.relists.length > 0) && (
+        <div className="rounded-md border border-border bg-surface p-4">
+          <p className="mb-3 flex items-center gap-2 text-sm font-medium">
+            <History className="h-4 w-4 text-muted" />
+            Oksjoni ajalugu
+          </p>
+          <ol className="space-y-2">
+            {auction.relistedFrom && (
+              <RoundRow round={auction.relistedFrom} relation="previous" />
+            )}
+            <li className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-primary/40 bg-primary/5 px-3 py-2 text-sm">
+              <Badge variant="default">Praegune</Badge>
+              <span className="font-medium">{localized(auction.title, "et")}</span>
+              <StatusChip status={auction.status} />
+            </li>
+            {auction.relists.map((r) => (
+              <RoundRow key={r.id} round={r} relation="next" />
+            ))}
+          </ol>
+        </div>
+      )}
 
       {/* Invoices already created for this auction */}
       {invoices.length > 0 && (
@@ -165,5 +215,47 @@ export default async function AdminAuctionOverviewPage({
         <BidOverview bids={bids} invoiceAuctionId={auction.id} />
       </div>
     </div>
+  );
+}
+
+interface Round {
+  id: string;
+  slug: string;
+  title: unknown;
+  status: string;
+  finalPrice: number | null;
+  currentBid: number | null;
+  startingPrice: number;
+  reservePrice: number | null;
+  reserveMet: boolean;
+  auctionEnd: Date;
+  _count: { bids: number; phoneBids: number };
+}
+
+/** One row in the relist history chain (a previous or follow-up auction). */
+function RoundRow({ round, relation }: { round: Round; relation: "previous" | "next" }) {
+  const bidCount = round._count.bids + round._count.phoneBids;
+  const price = round.finalPrice ?? round.currentBid ?? round.startingPrice;
+  const unsold =
+    round.reservePrice != null && !round.reserveMet && round.status !== "SOLD";
+
+  return (
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-border px-3 py-2 text-sm">
+      <Badge variant="muted">{relation === "previous" ? "Eelmine" : "Uus"}</Badge>
+      <Link
+        href={`/admin/oksjonid/${round.id}`}
+        className="font-medium hover:text-primary hover:underline"
+      >
+        {localized(round.title as Record<string, string> | null, "et")}
+      </Link>
+      <StatusChip status={round.status as never} />
+      <span className="text-muted">
+        {formatDateTime(round.auctionEnd)} · {bidCount} pakkumist ·{" "}
+        {formatCurrency(price)}
+      </span>
+      {unsold && (
+        <Badge variant="warning">Reserv täitmata</Badge>
+      )}
+    </li>
   );
 }

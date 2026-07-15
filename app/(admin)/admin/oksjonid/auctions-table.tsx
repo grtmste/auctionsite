@@ -15,6 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { deleteAuction } from "../actions";
+import { RelistButton } from "@/components/admin/relist-button";
 import type { AuctionStatus, AuctionType } from "@prisma/client";
 
 interface Row {
@@ -113,6 +114,16 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
                         <FileText className="h-4 w-4 text-primary" />
                       </Button>
                     </Link>
+                  )}
+                  {(auction.status === "ENDED" ||
+                    auction.status === "SOLD" ||
+                    auction.status === "CANCELLED") && (
+                    <RelistButton
+                      auctionId={auction.id}
+                      size="icon"
+                      variant="ghost"
+                      iconOnly
+                    />
                   )}
                   <Button
                     variant="ghost"
