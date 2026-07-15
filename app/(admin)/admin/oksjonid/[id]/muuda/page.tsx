@@ -5,6 +5,7 @@ import {
   EMPTY_AUCTION,
   type AuctionFormValues,
 } from "@/components/admin/auction-form";
+import { translationAvailable } from "@/lib/translate";
 
 export const dynamic = "force-dynamic";
 
@@ -83,7 +84,7 @@ export default async function EditAuctionPage({
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Muuda oksjonit</h1>
-      <AuctionForm initial={initial} />
+      <AuctionForm initial={initial} canAutoTranslate={translationAvailable()} />
     </div>
   );
 }

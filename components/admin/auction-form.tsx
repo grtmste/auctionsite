@@ -6,7 +6,9 @@ import {
   ArrowDown,
   ArrowUp,
   ImagePlus,
+  Loader2,
   Plus,
+  Sparkles,
   Star,
   Trash2,
 } from "lucide-react";
@@ -18,7 +20,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { UploadDropzone } from "@/lib/uploadthing";
 import { cn } from "@/lib/utils";
-import { saveAuction, type AuctionFormInput } from "@/app/(admin)/admin/actions";
+import {
+  saveAuction,
+  autoTranslateAuctionFields,
+  type AuctionFormInput,
+} from "@/app/(admin)/admin/actions";
 
 const LANGS = ["et", "en", "ru", "lv", "lt"] as const;
 
@@ -92,15 +98,56 @@ const num = (v: string): number | null => {
   return v.trim() !== "" && Number.isFinite(n) ? n : null;
 };
 
-export function AuctionForm({ initial }: { initial: AuctionFormValues }) {
+export function AuctionForm({
+  initial,
+  canAutoTranslate = false,
+}: {
+  initial: AuctionFormValues;
+  canAutoTranslate?: boolean;
+}) {
   const router = useRouter();
   const [form, setForm] = useState<AuctionFormValues>(initial);
   const [urlInput, setUrlInput] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const [translating, setTranslating] = useState(false);
+  const [translateMessage, setTranslateMessage] = useState<string | null>(null);
 
   const set = <K extends keyof AuctionFormValues>(key: K, value: AuctionFormValues[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
+
+  async function autoTranslate() {
+    setTranslateMessage(null);
+    if (!form.title.et.trim()) {
+      setTranslateMessage("Lisa kõigepealt eestikeelne pealkiri.");
+      return;
+    }
+    setTranslating(true);
+    try {
+      const res = await autoTranslateAuctionFields({
+        title: form.title.et,
+        description: form.description.et ?? "",
+      });
+      if (!res.ok) {
+        setTranslateMessage(
+          res.error === "NO_API_KEY"
+            ? "Automaattõlge vajab ANTHROPIC_API_KEY seadistust Vercelis."
+            : "Lisa kõigepealt eestikeelne pealkiri."
+        );
+        return;
+      }
+      setForm((f) => ({
+        ...f,
+        title: { ...f.title, ...res.titles },
+        description: { ...f.description, ...res.descriptions },
+      }));
+      setTranslateMessage("Tõlgitud: EN, RU, LV, LT. Kontrolli ja salvesta.");
+    } catch {
+      setTranslateMessage("Tõlkimine ebaõnnestus. Proovi uuesti.");
+    } finally {
+      setTranslating(false);
+    }
+  }
 
   function submit(statusOverride?: string) {
     setError(null);
@@ -199,7 +246,40 @@ export function AuctionForm({ initial }: { initial: AuctionFormValues }) {
     <div className="max-w-4xl space-y-8">
       {/* Title + description with language tabs */}
       <section className="rounded-lg border border-border bg-surface p-5">
-        <h2 className="mb-4 font-semibold">Pealkiri ja kirjeldus</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-semibold">Pealkiri ja kirjeldus</h2>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            onClick={autoTranslate}
+            disabled={translating || !canAutoTranslate}
+            title={
+              canAutoTranslate
+                ? "Tõlgib eestikeelse pealkirja ja kirjelduse keeltesse EN/RU/LV/LT"
+                : "Vajab ANTHROPIC_API_KEY seadistust Vercelis"
+            }
+          >
+            {translating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {translating ? "Tõlgin…" : "Tõlgi automaatselt (ET → EN/RU/LV/LT)"}
+          </Button>
+        </div>
+        {translateMessage && (
+          <p
+            className={cn(
+              "mb-4 rounded-md border p-2.5 text-sm",
+              translateMessage.startsWith("Tõlgitud")
+                ? "border-success/40 bg-success/10 text-success"
+                : "border-border bg-background text-muted"
+            )}
+          >
+            {translateMessage}
+          </p>
+        )}
         <Tabs defaultValue="et">
           <TabsList>
             {LANGS.map((lang) => (

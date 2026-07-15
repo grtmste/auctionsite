@@ -527,14 +527,23 @@ export async function autoTranslatePage(slug: string, targetLangs: string[]) {
   const source = content.et;
   if (!source?.trim()) return { ok: false as const, error: "NO_SOURCE" };
 
+  // Translate all target languages in parallel to keep wall-clock time down
+  const langs = targetLangs.filter((lang) => lang !== "et");
+  const results = await Promise.all(
+    langs.map(async (lang) => {
+      try {
+        return { lang, value: await translateHtml(source, lang) };
+      } catch {
+        return { lang, value: null };
+      }
+    })
+  );
+
   const done: string[] = [];
-  for (const lang of targetLangs) {
-    if (lang === "et") continue;
-    try {
-      content[lang] = await translateHtml(source, lang);
+  for (const { lang, value } of results) {
+    if (value !== null) {
+      content[lang] = value;
       done.push(lang);
-    } catch {
-      // continue with remaining languages
     }
   }
 
@@ -545,6 +554,51 @@ export async function autoTranslatePage(slug: string, targetLangs: string[]) {
   });
   revalidatePath("/", "layout");
   return { ok: true as const, translated: done, content };
+}
+
+/**
+ * Translate an auction's Estonian title and description into EN/RU/LV/LT.
+ * Returned to the client so the admin can review before saving; nothing is
+ * persisted here (the form Save button does that).
+ */
+export async function autoTranslateAuctionFields(input: {
+  title: string;
+  description: string;
+}) {
+  await requireAdmin();
+  const { translateHtml, translateStrings, translationAvailable } = await import(
+    "@/lib/translate"
+  );
+  if (!translationAvailable()) {
+    return { ok: false as const, error: "NO_API_KEY" };
+  }
+  if (!input.title.trim()) {
+    return { ok: false as const, error: "NO_SOURCE" };
+  }
+
+  const langs = ["en", "ru", "lv", "lt"] as const;
+
+  // Translate title + description for every language in parallel
+  const results = await Promise.all(
+    langs.map(async (lang) => {
+      const title = await translateStrings({ t: input.title }, lang)
+        .then((r) => r.t ?? input.title)
+        .catch(() => input.title);
+      const description = input.description.trim()
+        ? await translateHtml(input.description, lang).catch(() => "")
+        : "";
+      return { lang, title, description };
+    })
+  );
+
+  const titles: Record<string, string> = {};
+  const descriptions: Record<string, string> = {};
+  for (const r of results) {
+    titles[r.lang] = r.title;
+    descriptions[r.lang] = r.description;
+  }
+
+  return { ok: true as const, titles, descriptions };
 }
 
 /**

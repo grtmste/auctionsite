@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Check, Search, Sparkles } from "lucide-react";
+import { Check, Loader2, Search, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { cn } from "@/lib/utils";
 import { saveTranslation, savePageContent, autoTranslatePage, autoTranslateUi } from "../actions";
 
 const LANGS = ["et", "en", "ru", "lv", "lt"] as const;
@@ -39,41 +40,61 @@ export function TranslationEditor({
   const [pages, setPages] = useState(initialPages);
   const [activeSlug, setActiveSlug] = useState("reeglid");
   const [pageMessage, setPageMessage] = useState<string | null>(null);
-  const [autoMessage, setAutoMessage] = useState<string | null>(null);
+  const [autoMessage, setAutoMessage] =
+    useState<{ ok: boolean; text: string } | null>(null);
+  const [translating, setTranslating] = useState(false);
   const [pending, startTransition] = useTransition();
 
-  function runAutoTranslateUi() {
+  async function runAutoTranslateUi() {
     setAutoMessage(null);
-    startTransition(async () => {
+    setTranslating(true);
+    try {
       const res = await autoTranslateUi(language);
       setAutoMessage(
         !res.ok
-          ? "Automaattõlge vajab ANTHROPIC_API_KEY seadistust Vercelis."
+          ? { ok: false, text: "Automaattõlge vajab ANTHROPIC_API_KEY seadistust Vercelis." }
           : res.translated === 0
-            ? "Kõik on juba tõlgitud — tõlkefailid katavad vaikimisi kõik keeled; siin tõlgitakse ainult sinu muudetud (ET) tekstid."
-            : `Tõlgitud ${res.translated} teksti keelde ${language.toUpperCase()}.`
+            ? {
+                ok: true,
+                text: "Kõik on juba tõlgitud — tõlkefailid katavad vaikimisi kõik keeled; siin tõlgitakse ainult sinu muudetud (ET) tekstid.",
+              }
+            : { ok: true, text: `✓ Tõlgitud ${res.translated} teksti keelde ${language.toUpperCase()}.` }
       );
-    });
+    } catch {
+      setAutoMessage({ ok: false, text: "Tõlkimine ebaõnnestus. Proovi uuesti." });
+    } finally {
+      setTranslating(false);
+    }
   }
 
-  function runAutoTranslatePage() {
+  async function runAutoTranslatePage() {
     setAutoMessage(null);
-    startTransition(async () => {
+    setTranslating(true);
+    try {
       const res = await autoTranslatePage(activeSlug, ["en", "ru", "lv", "lt"]);
       if (!res.ok) {
-        setAutoMessage(
-          res.error === "NO_API_KEY"
-            ? "Automaattõlge vajab ANTHROPIC_API_KEY seadistust Vercelis."
-            : "Eestikeelne sisu puudub — lisa see kõigepealt."
-        );
+        setAutoMessage({
+          ok: false,
+          text:
+            res.error === "NO_API_KEY"
+              ? "Automaattõlge vajab ANTHROPIC_API_KEY seadistust Vercelis."
+              : "Eestikeelne sisu puudub — lisa see kõigepealt.",
+        });
         return;
       }
       setPages((prev) => ({
         ...prev,
         [activeSlug]: { ...prev[activeSlug], ...(res.content as Record<string, string>) },
       }));
-      setAutoMessage(`Leht tõlgitud: ${res.translated.map((l) => l.toUpperCase()).join(", ")}`);
-    });
+      setAutoMessage({
+        ok: true,
+        text: `✓ Leht tõlgitud ja salvestatud: ${res.translated.map((l) => l.toUpperCase()).join(", ")}. Kontrolli keeltevahetajast.`,
+      });
+    } catch {
+      setAutoMessage({ ok: false, text: "Tõlkimine ebaõnnestus. Proovi uuesti." });
+    } finally {
+      setTranslating(false);
+    }
   }
 
   const keys = useMemo(() => {
@@ -153,16 +174,29 @@ export function TranslationEditor({
             <Button
               variant="secondary"
               onClick={runAutoTranslateUi}
-              disabled={pending || !canAutoTranslate}
+              disabled={translating || pending || !canAutoTranslate}
               title={canAutoTranslate ? "" : "Vajab ANTHROPIC_API_KEY seadistust"}
             >
-              <Sparkles className="h-4 w-4" />
-              Tõlgi automaatselt
+              {translating ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+              {translating ? "Tõlgin…" : "Tõlgi automaatselt"}
             </Button>
           )}
         </div>
         {autoMessage && (
-          <p className="mb-3 rounded-md border border-border bg-surface p-2.5 text-sm">{autoMessage}</p>
+          <p
+            className={cn(
+              "mb-3 rounded-md border p-2.5 text-sm",
+              autoMessage.ok
+                ? "border-success/40 bg-success/10 text-success"
+                : "border-danger/40 bg-danger/10 text-danger"
+            )}
+          >
+            {autoMessage.text}
+          </p>
         )}
 
         <p className="mb-3 text-xs text-muted">
@@ -264,21 +298,42 @@ export function TranslationEditor({
         </Tabs>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button onClick={savePage} disabled={pending}>
+          <Button onClick={savePage} disabled={pending || translating}>
             Salvesta leht
           </Button>
           <Button
             variant="secondary"
             onClick={runAutoTranslatePage}
-            disabled={pending || !canAutoTranslate}
+            disabled={pending || translating || !canAutoTranslate}
             title={canAutoTranslate ? "Tõlgib ET sisu keeltesse EN/RU/LV/LT" : "Vajab ANTHROPIC_API_KEY seadistust"}
           >
-            <Sparkles className="h-4 w-4" />
-            Tõlgi automaatselt (ET → EN/RU/LV/LT)
+            {translating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Sparkles className="h-4 w-4" />
+            )}
+            {translating ? "Tõlgin… (u 10–20 sek)" : "Tõlgi automaatselt (ET → EN/RU/LV/LT)"}
           </Button>
           {pageMessage && <span className="text-sm text-success">{pageMessage}</span>}
-          {autoMessage && <span className="text-sm text-muted">{autoMessage}</span>}
         </div>
+        {translating && (
+          <p className="mt-2 text-sm text-muted">
+            Tõlgin sisu nelja keelde — palun oota, see võtab tavaliselt 10–20
+            sekundit…
+          </p>
+        )}
+        {autoMessage && (
+          <p
+            className={cn(
+              "mt-2 rounded-md border p-2.5 text-sm",
+              autoMessage.ok
+                ? "border-success/40 bg-success/10 text-success"
+                : "border-danger/40 bg-danger/10 text-danger"
+            )}
+          >
+            {autoMessage.text}
+          </p>
+        )}
       </TabsContent>
     </Tabs>
   );
