@@ -10,7 +10,7 @@ import { LanguageSwitcher } from "./language-switcher";
 import { Logo } from "./logo";
 
 interface HeaderNavProps {
-  user: { name: string; isAdmin: boolean } | null;
+  user: { name: string; isAdmin: boolean; isVendor: boolean } | null;
   logoUrl?: string | null;
 }
 
@@ -97,6 +97,14 @@ export function HeaderNav({ user, logoUrl }: HeaderNavProps) {
                   {t("admin")}
                 </NextLink>
               )}
+              {user.isVendor && (
+                <NextLink
+                  href="/vendor"
+                  className="rounded-md border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
+                >
+                  Müüjaportaal
+                </NextLink>
+              )}
               <Link
                 href="/minu-konto"
                 className="flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm text-foreground hover:border-primary"
@@ -161,6 +169,11 @@ export function HeaderNav({ user, logoUrl }: HeaderNavProps) {
               {user.isAdmin && (
                 <NextLink href="/admin" className="py-2 text-sm text-muted hover:text-foreground">
                   {t("admin")}
+                </NextLink>
+              )}
+              {user.isVendor && (
+                <NextLink href="/vendor" className="py-2 text-sm text-muted hover:text-foreground">
+                  Müüjaportaal
                 </NextLink>
               )}
               <Link

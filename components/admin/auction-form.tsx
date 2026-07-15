@@ -58,6 +58,7 @@ export interface AuctionFormValues {
   auctionStart: string; // datetime-local
   auctionEnd: string;
   phoneAuctionActive: boolean;
+  vendorId: string;
   images: { url: string; alt: string }[];
 }
 
@@ -90,6 +91,7 @@ export const EMPTY_AUCTION: AuctionFormValues = {
   auctionStart: "",
   auctionEnd: "",
   phoneAuctionActive: false,
+  vendorId: "",
   images: [],
 };
 
@@ -101,9 +103,11 @@ const num = (v: string): number | null => {
 export function AuctionForm({
   initial,
   canAutoTranslate = false,
+  vendors = [],
 }: {
   initial: AuctionFormValues;
   canAutoTranslate?: boolean;
+  vendors?: { id: string; label: string }[];
 }) {
   const router = useRouter();
   const [form, setForm] = useState<AuctionFormValues>(initial);
@@ -204,6 +208,7 @@ export function AuctionForm({
       auctionStart: new Date(form.auctionStart).toISOString(),
       auctionEnd: new Date(form.auctionEnd).toISOString(),
       phoneAuctionActive: form.phoneAuctionActive,
+      vendorId: form.vendorId || null,
       images: form.images.map((image) => ({ url: image.url, alt: image.alt || null })),
     };
 
@@ -347,6 +352,21 @@ export function AuctionForm({
               <option value="REGULAR">Sõiduk</option>
               <option value="PARTS">Varuosa</option>
               <option value="OTHER">Muu</option>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="af-vendor">Müüja (kindlustusmaakler)</Label>
+            <Select
+              id="af-vendor"
+              value={form.vendorId}
+              onChange={(e) => set("vendorId", e.target.value)}
+            >
+              <option value="">— Määramata —</option>
+              {vendors.map((vendor) => (
+                <option key={vendor.id} value={vendor.id}>
+                  {vendor.label}
+                </option>
+              ))}
             </Select>
           </div>
           {field("Käibemaks (%)", "vatPercent", { type: "number", min: 0, max: 100 })}

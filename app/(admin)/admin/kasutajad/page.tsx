@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { formatDate } from "@/lib/utils";
 import { UsersTable } from "./users-table";
 import { WordpressImport } from "./wordpress-import";
+import { CreateUserDialog } from "./create-user-dialog";
 import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -29,7 +30,10 @@ export default async function AdminUsersPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Kasutajad</h1>
-        <WordpressImport />
+        <div className="flex gap-2">
+          <WordpressImport />
+          <CreateUserDialog />
+        </div>
       </div>
       <UsersTable users={rows} />
     </div>

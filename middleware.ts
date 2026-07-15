@@ -8,9 +8,9 @@ const intlMiddleware = createIntlMiddleware(routing);
 export default async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Admin routes: require an ADMIN session (authoritative check happens
-  // again server-side in the admin layout)
-  if (pathname.startsWith("/admin")) {
+  // Admin & vendor routes: require the appropriate role. The authoritative
+  // check happens again server-side in each area's layout.
+  if (pathname.startsWith("/admin") || pathname.startsWith("/vendor")) {
     // The cookie name depends on whether the site is served over https,
     // so check both variants (Vercel/https vs local/self-hosted http)
     const token =
@@ -24,7 +24,13 @@ export default async function middleware(request: NextRequest) {
         secret: process.env.AUTH_SECRET,
         secureCookie: false,
       }));
-    if (!token || token.role !== "ADMIN") {
+
+    const isAdminArea = pathname.startsWith("/admin");
+    const allowed = isAdminArea
+      ? token?.role === "ADMIN"
+      : token?.role === "VENDOR" || token?.role === "ADMIN";
+
+    if (!allowed) {
       const loginUrl = new URL("/logi-sisse", request.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);

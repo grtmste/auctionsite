@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { useSearchParams } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -32,11 +32,18 @@ export function LoginForm() {
         setError(t("invalidCredentials"));
       } else {
         const callbackUrl = searchParams.get("callbackUrl");
-        if (callbackUrl?.startsWith("/admin")) {
+        if (callbackUrl?.startsWith("/admin") || callbackUrl?.startsWith("/vendor")) {
           window.location.href = callbackUrl;
         } else {
-          router.push((callbackUrl as never) ?? "/");
-          router.refresh();
+          // Vendors land in their portal by default; everyone else follows the
+          // callback URL or goes home.
+          const session = !callbackUrl ? await getSession() : null;
+          if (session?.user?.role === "VENDOR") {
+            window.location.href = "/vendor";
+          } else {
+            router.push((callbackUrl as never) ?? "/");
+            router.refresh();
+          }
         }
       }
     } catch {

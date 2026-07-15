@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Pencil, Trash2, ExternalLink, FileText } from "lucide-react";
+import { Pencil, Trash2, ExternalLink, FileText, ListChecks } from "lucide-react";
 import { StatusChip } from "@/components/admin/status-chip";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -25,6 +25,7 @@ interface Row {
   auctionType: AuctionType;
   price: string;
   bidCount: number;
+  vendor: string | null;
   auctionEnd: string;
 }
 
@@ -55,6 +56,7 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
           <TableRow>
             <TableHead>Pealkiri</TableHead>
             <TableHead>Tüüp</TableHead>
+            <TableHead>Müüja</TableHead>
             <TableHead>Staatus</TableHead>
             <TableHead>Hind</TableHead>
             <TableHead>Pakkumisi</TableHead>
@@ -65,7 +67,7 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
         <TableBody>
           {auctions.length === 0 && (
             <TableRow>
-              <TableCell colSpan={7} className="py-10 text-center text-muted">
+              <TableCell colSpan={8} className="py-10 text-center text-muted">
                 Oksjoneid pole. Loo esimene oksjon!
               </TableCell>
             </TableRow>
@@ -73,9 +75,15 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
           {auctions.map((auction) => (
             <TableRow key={auction.id}>
               <TableCell className="max-w-64 truncate font-medium">
-                {auction.title}
+                <Link
+                  href={`/admin/oksjonid/${auction.id}`}
+                  className="hover:text-primary hover:underline"
+                >
+                  {auction.title}
+                </Link>
               </TableCell>
               <TableCell>{TYPE_LABELS[auction.auctionType]}</TableCell>
+              <TableCell className="text-muted">{auction.vendor ?? "—"}</TableCell>
               <TableCell>
                 <StatusChip status={auction.status} />
               </TableCell>
@@ -84,6 +92,11 @@ export function AuctionsTable({ auctions }: { auctions: Row[] }) {
               <TableCell className="text-muted">{auction.auctionEnd}</TableCell>
               <TableCell>
                 <div className="flex justify-end gap-1">
+                  <Link href={`/admin/oksjonid/${auction.id}`}>
+                    <Button variant="ghost" size="icon" title="Pakkumiste ülevaade">
+                      <ListChecks className="h-4 w-4" />
+                    </Button>
+                  </Link>
                   <a href={`/oksjon/${auction.slug}`} target="_blank" rel="noreferrer">
                     <Button variant="ghost" size="icon" title="Vaata">
                       <ExternalLink className="h-4 w-4" />

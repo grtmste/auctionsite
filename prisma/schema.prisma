@@ -22,10 +22,12 @@ model User {
   bids          Bid[]
   sessions      Session[]
   accounts      Account[]
+  vendorAuctions Auction[] @relation("VendorAuctions")
 }
 
 enum Role {
   USER
+  VENDOR
   ADMIN
 }
 
@@ -99,6 +101,8 @@ model Auction {
   phoneAuctionEnd    DateTime?
   reserveMet         Boolean        @default(false)
   finalPrice         Float?
+  vendorId           String?
+  vendor             User?          @relation("VendorAuctions", fields: [vendorId], references: [id], onDelete: SetNull)
   images             AuctionImage[]
   bids               Bid[]
   phoneBids          PhoneBid[]

@@ -1,9 +1,10 @@
 "use client";
 
 import { useTransition } from "react";
-import { BadgeCheck, Ban, ShieldCheck, Shield, CheckCircle2 } from "lucide-react";
+import { BadgeCheck, Ban, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -14,6 +15,18 @@ import {
 } from "@/components/ui/table";
 import { setUserRole, verifyUser, setUserDisabled } from "../actions";
 import type { Role } from "@prisma/client";
+
+const ROLE_LABELS: Record<Role, string> = {
+  USER: "Kasutaja",
+  VENDOR: "Müüja",
+  ADMIN: "Admin",
+};
+
+const ROLE_VARIANTS: Record<Role, "default" | "muted" | "success"> = {
+  USER: "muted",
+  VENDOR: "success",
+  ADMIN: "default",
+};
 
 interface Row {
   id: string;
@@ -58,10 +71,23 @@ export function UsersTable({ users }: { users: Row[] }) {
               <TableCell>{user.email}</TableCell>
               <TableCell className="text-muted">{user.registered}</TableCell>
               <TableCell>
-                {user.role === "ADMIN" ? (
-                  <Badge variant="default">Admin</Badge>
+                {user.isSelf ? (
+                  <Badge variant={ROLE_VARIANTS[user.role]}>{ROLE_LABELS[user.role]}</Badge>
                 ) : (
-                  <Badge variant="muted">Kasutaja</Badge>
+                  <Select
+                    value={user.role}
+                    disabled={pending}
+                    className="h-8 w-28 py-0 text-sm"
+                    onChange={(e) =>
+                      startTransition(() =>
+                        setUserRole(user.id, e.target.value as Role).then(() => {}),
+                      )
+                    }
+                  >
+                    <option value="USER">Kasutaja</option>
+                    <option value="VENDOR">Müüja</option>
+                    <option value="ADMIN">Admin</option>
+                  </Select>
                 )}
               </TableCell>
               <TableCell>
@@ -87,26 +113,6 @@ export function UsersTable({ users }: { users: Row[] }) {
                   )}
                   {!user.isSelf && (
                     <>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        title={user.role === "ADMIN" ? "Muuda kasutajaks" : "Muuda adminiks"}
-                        disabled={pending}
-                        onClick={() =>
-                          startTransition(() =>
-                            setUserRole(
-                              user.id,
-                              user.role === "ADMIN" ? "USER" : "ADMIN"
-                            ).then(() => {})
-                          )
-                        }
-                      >
-                        {user.role === "ADMIN" ? (
-                          <ShieldCheck className="h-4 w-4 text-primary" />
-                        ) : (
-                          <Shield className="h-4 w-4" />
-                        )}
-                      </Button>
                       <Button
                         variant="ghost"
                         size="icon"

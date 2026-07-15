@@ -47,6 +47,7 @@ const auctionSchema = z.object({
   auctionStart: z.string(),
   auctionEnd: z.string(),
   phoneAuctionActive: z.boolean(),
+  vendorId: z.string().nullable().optional(),
   images: z.array(
     z.object({
       url: z.string().url(),
@@ -91,6 +92,7 @@ export async function saveAuction(input: AuctionFormInput) {
     auctionStart: new Date(data.auctionStart),
     auctionEnd: new Date(data.auctionEnd),
     phoneAuctionActive: data.phoneAuctionActive,
+    vendorId: data.vendorId || null,
   };
 
   let auctionId = data.id;
@@ -148,6 +150,40 @@ export async function setUserRole(userId: string, role: Role) {
   await db.user.update({ where: { id: userId }, data: { role } });
   revalidatePath("/admin/kasutajad");
   return { ok: true };
+}
+
+const createUserSchema = z.object({
+  name: z.string().min(1),
+  email: z.string().email(),
+  phone: z.string().optional(),
+  company: z.string().optional(),
+  role: z.enum(["USER", "VENDOR", "ADMIN"]),
+  password: z.string().min(8),
+});
+
+/** Admin creates an account directly (e.g. an insurance-broker vendor). */
+export async function createUser(input: z.infer<typeof createUserSchema>) {
+  await requireAdmin();
+  const data = createUserSchema.parse(input);
+  const email = data.email.trim().toLowerCase();
+
+  const existing = await db.user.findUnique({ where: { email } });
+  if (existing) return { ok: false as const, error: "EMAIL_EXISTS" };
+
+  await db.user.create({
+    data: {
+      name: data.name.trim(),
+      email,
+      phone: data.phone?.trim() || null,
+      company: data.company?.trim() || null,
+      role: data.role as Role,
+      passwordHash: await bcrypt.hash(data.password, 12),
+      // Admin-created accounts are considered verified.
+      emailVerified: new Date(),
+    },
+  });
+  revalidatePath("/admin/kasutajad");
+  return { ok: true as const };
 }
 
 export async function verifyUser(userId: string) {

@@ -6,6 +6,7 @@ import {
   type AuctionFormValues,
 } from "@/components/admin/auction-form";
 import { translationAvailable } from "@/lib/translate";
+import { getVendorOptions } from "@/lib/vendors";
 
 export const dynamic = "force-dynamic";
 
@@ -29,10 +30,13 @@ export default async function EditAuctionPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const auction = await db.auction.findUnique({
-    where: { id },
-    include: { images: { orderBy: { sortOrder: "asc" } } },
-  });
+  const [auction, vendors] = await Promise.all([
+    db.auction.findUnique({
+      where: { id },
+      include: { images: { orderBy: { sortOrder: "asc" } } },
+    }),
+    getVendorOptions(),
+  ]);
   if (!auction) notFound();
 
   const asRecord = (value: unknown): Record<string, string> => {
@@ -78,13 +82,18 @@ export default async function EditAuctionPage({
     auctionStart: toLocalInput(auction.auctionStart),
     auctionEnd: toLocalInput(auction.auctionEnd),
     phoneAuctionActive: auction.phoneAuctionActive,
+    vendorId: auction.vendorId ?? "",
     images: auction.images.map((image) => ({ url: image.url, alt: image.alt ?? "" })),
   };
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold">Muuda oksjonit</h1>
-      <AuctionForm initial={initial} canAutoTranslate={translationAvailable()} />
+      <AuctionForm
+        initial={initial}
+        canAutoTranslate={translationAvailable()}
+        vendors={vendors}
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ export async function Header() {
           ? {
               name: session.user.name ?? session.user.email,
               isAdmin: session.user.role === "ADMIN",
+              isVendor: session.user.role === "VENDOR",
             }
           : null
       }

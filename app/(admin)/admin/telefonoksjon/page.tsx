@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Phone } from "lucide-react";
+import { Phone, History } from "lucide-react";
 import { db } from "@/lib/db";
-import { formatDateTime, localized } from "@/lib/utils";
+import { formatCurrency, formatDateTime, localized } from "@/lib/utils";
 import { runStatusTransitions } from "@/lib/auction-status";
 import { cn } from "@/lib/utils";
 import { PhoneAuctionModule } from "./phone-auction-module";
@@ -26,6 +26,26 @@ export default async function PhoneAuctionPage({
       phoneAuctionEnd: true,
       currentBid: true,
       startingPrice: true,
+    },
+  });
+
+  // History: auctions that went through a phone round (have phone bids or a
+  // phone-auction end time) and are now finished.
+  const endedPhoneAuctions = await db.auction.findMany({
+    where: {
+      status: { in: ["ENDED", "SOLD", "CANCELLED"] },
+      OR: [{ phoneBids: { some: {} } }, { phoneAuctionEnd: { not: null } }],
+    },
+    orderBy: { auctionEnd: "desc" },
+    take: 50,
+    select: {
+      id: true,
+      title: true,
+      status: true,
+      auctionEnd: true,
+      finalPrice: true,
+      currentBid: true,
+      _count: { select: { phoneBids: true } },
     },
   });
 
@@ -98,6 +118,39 @@ export default async function PhoneAuctionPage({
                       <span className="font-medium">{localized(auction.title, "et")}</span>
                       <span className="mt-1 block text-xs text-muted">
                         Online lõppes: {formatDateTime(auction.auctionEnd)}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
+          {/* History of finished phone auctions */}
+          <div className="mt-6 rounded-lg border border-border bg-surface">
+            <h2 className="flex items-center gap-2 border-b border-border px-4 py-3 text-sm font-semibold">
+              <History className="h-4 w-4 text-muted" />
+              Lõppenud telefonioksjonid
+            </h2>
+            {endedPhoneAuctions.length === 0 ? (
+              <p className="px-4 py-6 text-sm text-muted">Ajalugu on veel tühi.</p>
+            ) : (
+              <ul>
+                {endedPhoneAuctions.map((auction) => (
+                  <li key={auction.id}>
+                    <Link
+                      href={`/admin/oksjonid/${auction.id}`}
+                      className="block border-b border-border px-4 py-3 text-sm last:border-0 hover:bg-surface-hover"
+                    >
+                      <span className="font-medium">{localized(auction.title, "et")}</span>
+                      <span className="mt-1 flex items-center justify-between text-xs text-muted">
+                        <span>{formatDateTime(auction.auctionEnd)}</span>
+                        <span>
+                          {auction._count.phoneBids} tel.pakkumist ·{" "}
+                          {formatCurrency(
+                            auction.finalPrice ?? auction.currentBid ?? 0,
+                          )}
+                        </span>
                       </span>
                     </Link>
                   </li>
