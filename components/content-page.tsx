@@ -1,21 +1,33 @@
+import type { LucideIcon } from "lucide-react";
 import { getPageContent } from "@/lib/pages";
+import { PageShell } from "@/components/page-shell";
 
 interface ContentPageProps {
   slug: string;
   locale: string;
   title: string;
+  subtitle?: string;
+  icon?: LucideIcon;
 }
 
-export async function ContentPage({ slug, locale, title }: ContentPageProps) {
+export async function ContentPage({
+  slug,
+  locale,
+  title,
+  subtitle,
+  icon,
+}: ContentPageProps) {
   const html = await getPageContent(slug, locale);
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="mb-8 text-3xl font-bold">{title}</h1>
+    <PageShell title={title} subtitle={subtitle} icon={icon}>
       {html ? (
-        <div className="rich-text" dangerouslySetInnerHTML={{ __html: html }} />
+        <div
+          className="rich-text rounded-lg border border-border bg-surface p-6 shadow-sm md:p-8"
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
       ) : (
         <p className="text-muted">…</p>
       )}
-    </div>
+    </PageShell>
   );
 }

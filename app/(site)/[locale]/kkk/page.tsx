@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
+import { HelpCircle } from "lucide-react";
 import { getPageContent } from "@/lib/pages";
 import { FaqAccordion } from "@/components/faq-accordion";
+import { PageShell } from "@/components/page-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +13,12 @@ export default async function FaqPage({
 }) {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "nav" });
+  const tp = await getTranslations({ locale, namespace: "pages" });
   const html = await getPageContent("kkk", locale);
 
   return (
-    <div className="mx-auto max-w-3xl px-4 py-10">
-      <h1 className="mb-8 text-3xl font-bold">{t("faq")}</h1>
+    <PageShell title={t("faq")} subtitle={tp("faqSub")} icon={HelpCircle}>
       {html ? <FaqAccordion html={html} /> : <p className="text-muted">…</p>}
-    </div>
+    </PageShell>
   );
 }

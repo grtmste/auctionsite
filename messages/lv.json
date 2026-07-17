@@ -233,5 +233,11 @@
   "meta": {
     "defaultTitle": "Auto izsoles — apdrošināšanas gadījumu transportlīdzekļu izsoles",
     "defaultDescription": "Avarējušu un apdrošināšanas gadījumu transportlīdzekļu izsoles. Pērciet tieši no apdrošināšanas sabiedrībām."
+  },
+  "pages": {
+    "servicesSub": "Mūsu pakalpojumi apdrošinātājiem un privātklientiem",
+    "rulesSub": "Dalības noteikumi izsolēs",
+    "faqSub": "Biežāk uzdotie jautājumi un atbildes",
+    "privacySub": "Kā mēs vācam un aizsargājam jūsu datus"
   }
 }

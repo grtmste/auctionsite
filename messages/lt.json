@@ -233,5 +233,11 @@
   "meta": {
     "defaultTitle": "Automobilių aukcionai — draudiminių įvykių transporto priemonių aukcionai",
     "defaultDescription": "Apgadintų ir draudiminių įvykių transporto priemonių aukcionai. Pirkite tiesiogiai iš draudimo bendrovių."
+  },
+  "pages": {
+    "servicesSub": "Mūsų paslaugos draudikams ir privatiems klientams",
+    "rulesSub": "Dalyvavimo aukcionuose sąlygos ir taisyklės",
+    "faqSub": "Dažnai užduodami klausimai ir atsakymai",
+    "privacySub": "Kaip renkame ir saugome jūsų duomenis"
   }
 }

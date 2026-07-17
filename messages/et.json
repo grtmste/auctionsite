@@ -233,5 +233,11 @@
   "meta": {
     "defaultTitle": "Autooksjonid — kindlustusjuhtumitega sõidukite oksjonid",
     "defaultDescription": "Avariiliste ja kindlustusjuhtumitega sõidukite oksjonid. Ostke sõidukeid otse kindlustusseltsidelt."
+  },
+  "pages": {
+    "servicesSub": "Meie teenused kindlustusseltsidele ja eraklientidele",
+    "rulesSub": "Oksjonil osalemise tingimused ja kord",
+    "faqSub": "Korduma kippuvad küsimused ja vastused",
+    "privacySub": "Kuidas me sinu andmeid kogume ja kaitseme"
   }
 }

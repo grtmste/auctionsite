@@ -467,13 +467,26 @@ export function AuctionForm({
         <UploadDropzone
           endpoint="auctionImage"
           onClientUploadComplete={(files) => {
-            const added = files.map((file) => ({ url: file.ufsUrl, alt: "" }));
+            const added = files
+              .map((file) => ({ url: file.ufsUrl ?? file.url, alt: "" }))
+              .filter((image) => Boolean(image.url));
             set("images", [...form.images, ...added].slice(0, 20));
+            setError(null);
           }}
-          onUploadError={() =>
-            setError("Piltide üleslaadimine ebaõnnestus (kontrolli Uploadthing seadistust)")
+          onUploadError={(err) =>
+            setError(
+              `Piltide üleslaadimine ebaõnnestus: ${err.message}. ` +
+                "Kontrolli, et UPLOADTHING_TOKEN oleks Vercelis seadistatud.",
+            )
           }
-          className="ut-label:text-muted ut-button:bg-primary ut-button:ut-readying:bg-primary/60 border-border bg-background"
+          appearance={{
+            container:
+              "rounded-md border-2 border-dashed border-border bg-background py-6",
+            label: "text-sm font-medium text-foreground hover:text-primary",
+            allowedContent: "text-xs text-muted",
+            button:
+              "bg-primary text-white text-sm font-medium px-4 ut-readying:bg-primary/60 ut-uploading:bg-primary/70 after:bg-primary-hover",
+          }}
         />
 
         <div className="mt-3 flex gap-2">

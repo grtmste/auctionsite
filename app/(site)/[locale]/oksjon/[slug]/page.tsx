@@ -76,9 +76,11 @@ export default async function AuctionPage({
         )}
         <h1 className="mb-6 text-2xl font-bold md:text-3xl">{title}</h1>
 
-        <div className="grid gap-8 lg:grid-cols-5">
-          {/* Left: gallery + specs + description */}
-          <div className="space-y-8 lg:col-span-3">
+        {/* Mobile order: gallery -> bid panel -> description/specs.
+            Desktop: two columns (gallery + specs left, sticky bid panel right). */}
+        <div className="flex flex-col gap-8 lg:grid lg:grid-cols-5 lg:items-start">
+          {/* Gallery */}
+          <div className="order-1 lg:col-span-3 lg:col-start-1 lg:row-start-1">
             <ImageGallery
               images={auction.images.map((image) => ({
                 url: image.url,
@@ -87,7 +89,35 @@ export default async function AuctionPage({
               }))}
               title={title}
             />
+          </div>
 
+          {/* Bid panel — right after the images on mobile, right column on desktop */}
+          <div className="order-2 lg:col-span-2 lg:col-start-4 lg:row-span-2 lg:row-start-1">
+            <div className="lg:sticky lg:top-20">
+              <BidPanel
+                auction={{
+                  id: auction.id,
+                  slug: auction.slug,
+                  status: auction.status,
+                  currentBid: effectiveCurrentBid,
+                  startingPrice: auction.startingPrice,
+                  bidIncrement: auction.bidIncrement,
+                  finalPrice: auction.finalPrice,
+                  auctionEnd: auction.auctionEnd.toISOString(),
+                  reserveMet: auction.reserveMet,
+                }}
+                bids={bids}
+                viewer={{
+                  loggedIn: Boolean(session?.user),
+                  verified: Boolean(session?.user?.verified),
+                  userId: session?.user?.id,
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Description + specs */}
+          <div className="order-3 space-y-8 lg:col-span-3 lg:col-start-1 lg:row-start-2">
             {description && (
               <div
                 className="rich-text rounded-lg border border-border bg-surface p-5"
@@ -117,31 +147,6 @@ export default async function AuctionPage({
                 customAttributes,
               }}
             />
-          </div>
-
-          {/* Right: bid panel */}
-          <div className="lg:col-span-2">
-            <div className="lg:sticky lg:top-20">
-              <BidPanel
-                auction={{
-                  id: auction.id,
-                  slug: auction.slug,
-                  status: auction.status,
-                  currentBid: effectiveCurrentBid,
-                  startingPrice: auction.startingPrice,
-                  bidIncrement: auction.bidIncrement,
-                  finalPrice: auction.finalPrice,
-                  auctionEnd: auction.auctionEnd.toISOString(),
-                  reserveMet: auction.reserveMet,
-                }}
-                bids={bids}
-                viewer={{
-                  loggedIn: Boolean(session?.user),
-                  verified: Boolean(session?.user?.verified),
-                  userId: session?.user?.id,
-                }}
-              />
-            </div>
           </div>
         </div>
       </div>

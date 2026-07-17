@@ -233,5 +233,11 @@
   "meta": {
     "defaultTitle": "Car Auctions — insurance salvage vehicle auctions",
     "defaultDescription": "Auctions of accident-damaged and insurance case vehicles. Buy vehicles directly from insurance companies."
+  },
+  "pages": {
+    "servicesSub": "Our services for insurers and private clients",
+    "rulesSub": "Terms and rules for participating in auctions",
+    "faqSub": "Frequently asked questions and answers",
+    "privacySub": "How we collect and protect your data"
   }
 }
