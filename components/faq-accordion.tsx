@@ -64,48 +64,92 @@ export function FaqAccordion({ html }: { html: string }) {
  * seeded format (<h3>Question</h3> + answer) but also content imported from
  * elsewhere that may use <h2>/<h4> headings or bold-paragraph questions.
  */
-function parseFaq(html: string): { question: string; answer: string }[] {
-  const byHeading = (tag: string) => {
-    const out: { question: string; answer: string }[] = [];
-    const open = new RegExp(`<${tag}[^>]*>`, "i");
-    const close = new RegExp(`</${tag}>`, "i");
-    const parts = html.split(open);
-    for (const part of parts.slice(1)) {
-      const closeIndex = part.search(close);
-      if (closeIndex === -1) continue;
-      const question = part.slice(0, closeIndex).replace(/<[^>]+>/g, "").trim();
-      const answer = part.slice(closeIndex + `</${tag}>`.length).trim();
-      if (question) out.push({ question, answer });
+interface Section {
+  question: string;
+  answer: string;
+}
+
+const strip = (s: string) =>
+  s
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .trim();
+
+/** Split on a given opening/closing heading tag (h2/h3/h4). */
+function splitByHeading(html: string, tag: string): Section[] {
+  const out: Section[] = [];
+  const open = new RegExp(`<${tag}[^>]*>`, "i");
+  const close = new RegExp(`</${tag}>`, "i");
+  const parts = html.split(open);
+  for (const part of parts.slice(1)) {
+    const closeIndex = part.search(close);
+    if (closeIndex === -1) continue;
+    const question = strip(part.slice(0, closeIndex));
+    const answer = part.slice(closeIndex + `</${tag}>`.length).trim();
+    if (question) out.push({ question, answer });
+  }
+  return out;
+}
+
+/**
+ * Boundary split: treat every "question-like" block as the start of a new
+ * accordion item. A block counts as a question when it is a bold-led paragraph
+ * or a paragraph whose text ends with "?". Handles the common cases where an
+ * admin typed questions in bold (not as headings) or as plain "…?" lines,
+ * including a question and its answer sharing one paragraph.
+ */
+function splitByQuestionBlocks(html: string): Section[] {
+  // Each top-level <p>…</p> (fallback: split on <br>) is a block.
+  const blocks = html.match(/<p\b[^>]*>[\s\S]*?<\/p>/gi);
+  if (!blocks || blocks.length < 2) return [];
+
+  const isQuestion = (block: string) => {
+    const inner = block.replace(/^<p[^>]*>/i, "").replace(/<\/p>$/i, "");
+    const leadingBold = /^\s*(?:<strong>|<b>)([\s\S]*?)(?:<\/strong>|<\/b>)/i.exec(inner);
+    if (leadingBold) {
+      // Bold-led paragraph. Question = the bold text; anything after it in the
+      // same paragraph is the first part of the answer.
+      const rest = inner.slice(leadingBold[0].length);
+      return { question: strip(leadingBold[1]), inlineAnswer: rest.trim() };
     }
-    return out;
+    const text = strip(inner);
+    if (text.endsWith("?")) return { question: text, inlineAnswer: "" };
+    return null;
   };
 
-  // Prefer whichever heading level actually structures the document.
+  const out: Section[] = [];
+  let current: (Section & { _inline?: string }) | null = null;
+  for (const block of blocks) {
+    const q = isQuestion(block);
+    if (q) {
+      if (current) out.push(current);
+      current = {
+        question: q.question,
+        answer: q.inlineAnswer ? `<p>${q.inlineAnswer}</p>` : "",
+      };
+    } else if (current) {
+      current.answer += block;
+    }
+  }
+  if (current) out.push(current);
+  return out.length >= 2 ? out : [];
+}
+
+/**
+ * Split admin-authored FAQ HTML into question/answer pairs. Supports headings
+ * (h2/h3/h4), bold-led question paragraphs, and plain "…?" question lines — so
+ * it works regardless of how the FAQ was authored in the editor.
+ */
+function parseFaq(html: string): Section[] {
   for (const tag of ["h2", "h3", "h4"]) {
-    const sections = byHeading(tag);
+    const sections = splitByHeading(html, tag);
     if (sections.length >= 2) return sections;
   }
-
-  // Fallback: paragraphs that begin with a bold question.
-  const boldQ =
-    /<p[^>]*>\s*(?:<strong>|<b>)(.*?)(?:<\/strong>|<\/b>)\s*<\/p>/gi;
-  const matches = [...html.matchAll(boldQ)];
-  if (matches.length >= 2) {
-    const out: { question: string; answer: string }[] = [];
-    for (let i = 0; i < matches.length; i++) {
-      const start = matches[i].index! + matches[i][0].length;
-      const end = i + 1 < matches.length ? matches[i + 1].index! : html.length;
-      out.push({
-        question: matches[i][1].replace(/<[^>]+>/g, "").trim(),
-        answer: html.slice(start, end).trim(),
-      });
-    }
-    return out;
-  }
-
-  // Single heading still deserves an accordion.
+  const byBlocks = splitByQuestionBlocks(html);
+  if (byBlocks.length >= 2) return byBlocks;
   for (const tag of ["h2", "h3", "h4"]) {
-    const sections = byHeading(tag);
+    const sections = splitByHeading(html, tag);
     if (sections.length === 1) return sections;
   }
   return [];

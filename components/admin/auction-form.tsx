@@ -19,6 +19,7 @@ import { Select } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { UploadDropzone } from "@/lib/uploadthing";
+import { processImageForUpload } from "@/lib/image-processing";
 import { cn } from "@/lib/utils";
 import {
   saveAuction,
@@ -467,6 +468,7 @@ export function AuctionForm({
         <UploadDropzone
           endpoint="auctionImage"
           config={{ mode: "auto" }}
+          onBeforeUploadBegin={(files) => Promise.all(files.map(processImageForUpload))}
           content={{
             label: "Lohista pildid siia või vali failid",
             allowedContent: "Kuni 20 pilti, iga kuni 8 MB",

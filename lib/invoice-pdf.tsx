@@ -33,8 +33,7 @@ const styles = StyleSheet.create({
   },
   logo: { height: 34, objectFit: "contain" },
   brandText: { fontSize: 22, fontFamily: "Helvetica-Bold", color: ORANGE },
-  invoiceTitle: { fontSize: 20, fontFamily: "Helvetica-Bold", textAlign: "right" },
-  invoiceNumber: { fontSize: 11, color: MUTED, textAlign: "right", marginTop: 2 },
+  invoiceTitle: { fontSize: 12, fontFamily: "Helvetica-Bold", textAlign: "right" },
   partiesRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 24 },
   party: { width: "48%" },
   partyLabel: {
@@ -155,8 +154,7 @@ function InvoiceDocument({
             )}
           </View>
           <View>
-            <Text style={styles.invoiceTitle}>ARVE</Text>
-            <Text style={styles.invoiceNumber}>nr {invoice.number}</Text>
+            <Text style={styles.invoiceTitle}>Arve nr {invoice.number}</Text>
           </View>
         </View>
 

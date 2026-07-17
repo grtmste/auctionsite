@@ -184,9 +184,19 @@ export function BidPanel({ auction, bids: initialBids, viewer }: BidPanelProps) 
           )}
         </div>
 
-        <p className="mt-3 text-xs text-muted">
-          {t("auction.endsAt")}: {formatDateTime(auction.auctionEnd, locale)}
-        </p>
+        {/* During a phone auction there is no fixed public end time — the
+            admin closes it manually once the winning offer is confirmed. */}
+        {isActive && (
+          <p className="mt-3 text-xs text-muted">
+            {t("auction.endsAt")}: {formatDateTime(auction.auctionEnd, locale)}
+          </p>
+        )}
+        {isPhone && (
+          <p className="mt-3 flex items-center gap-1.5 text-xs font-medium text-warning">
+            <Phone className="h-3.5 w-3.5" />
+            {t("auction.phoneAuctionBanner")}
+          </p>
+        )}
 
         {/* Fixed-step bid button */}
         {isActive && (

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { UploadDropzone } from "@/lib/uploadthing";
+import { processImageForUpload } from "@/lib/image-processing";
 
 interface Props {
   /** Render a custom trigger; if omitted a default branded button is shown. */
@@ -105,6 +106,7 @@ export function PersonalOffer({ variant = "button", className }: Props) {
               <UploadDropzone
                 endpoint="personalOfferImage"
                 config={{ mode: "auto" }}
+                onBeforeUploadBegin={(files) => Promise.all(files.map(processImageForUpload))}
                 content={{
                   label: t("uploadLabel"),
                   allowedContent: t("imagesHint"),

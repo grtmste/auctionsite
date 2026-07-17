@@ -80,7 +80,7 @@ export default async function HomePage({
           }}
         />
         <div className="relative mx-auto max-w-7xl px-4 py-20 md:py-28">
-          <h1 className="rise-in max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-5xl lg:text-6xl">
+          <h1 className="rise-in max-w-3xl text-balance break-words hyphens-auto text-3xl font-bold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
             {t("home.heroTitle")}
           </h1>
           <p

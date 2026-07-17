@@ -28,6 +28,9 @@ model User {
   sessions      Session[]
   accounts      Account[]
   vendorAuctions Auction[] @relation("VendorAuctions")
+
+  @@index([role])
+  @@index([createdAt])
 }
 
 enum Role {
@@ -118,6 +121,15 @@ model Auction {
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
   createdBy          String
+
+  @@index([status, auctionEnd]) // status transitions + listing order by end
+  @@index([status, hiddenFromPublic]) // public listing filter
+  @@index([auctionType, status]) // category pages
+  @@index([status, currentBid]) // price sort
+  @@index([make])
+  @@index([createdAt])
+  @@index([vendorId])
+  @@index([relistedFromId])
 }
 
 enum AuctionStatus {
@@ -143,6 +155,8 @@ model AuctionImage {
   alt       String?
   sortOrder Int     @default(0)
   auction   Auction @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+
+  @@index([auctionId, sortOrder])
 }
 
 model Bid {
@@ -169,6 +183,9 @@ model PhoneBid {
   recordedBy   String
   createdAt    DateTime       @default(now())
   auction      Auction        @relation(fields: [auctionId], references: [id])
+
+  @@index([auctionId, status, amount])
+  @@index([bidderUserId])
 }
 
 enum PhoneBidStatus {
