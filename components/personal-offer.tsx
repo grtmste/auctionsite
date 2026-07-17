@@ -104,6 +104,7 @@ export function PersonalOffer({ variant = "button", className }: Props) {
               <Label>{t("images")}</Label>
               <UploadDropzone
                 endpoint="personalOfferImage"
+                config={{ mode: "auto" }}
                 content={{
                   label: t("uploadLabel"),
                   allowedContent: t("imagesHint"),

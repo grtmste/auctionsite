@@ -466,6 +466,7 @@ export function AuctionForm({
 
         <UploadDropzone
           endpoint="auctionImage"
+          config={{ mode: "auto" }}
           content={{
             label: "Lohista pildid siia või vali failid",
             allowedContent: "Kuni 20 pilti, iga kuni 8 MB",
