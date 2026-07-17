@@ -116,7 +116,8 @@ export function PersonalOffer({ variant = "button", className }: Props) {
                     "rounded-md border-2 border-dashed border-border bg-background py-5",
                   label: "text-sm font-medium text-foreground hover:text-primary",
                   allowedContent: "text-xs text-muted",
-                  button: "bg-primary text-white text-sm font-medium px-4",
+                  button:
+                    "!bg-primary hover:!bg-primary-hover text-white text-sm font-medium px-4",
                 }}
               />
               {images.length > 0 && (

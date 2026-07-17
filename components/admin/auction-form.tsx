@@ -485,7 +485,7 @@ export function AuctionForm({
             label: "text-sm font-medium text-foreground hover:text-primary",
             allowedContent: "text-xs text-muted",
             button:
-              "bg-primary text-white text-sm font-medium px-4 ut-readying:bg-primary/60 ut-uploading:bg-primary/70 after:bg-primary-hover",
+              "!bg-primary hover:!bg-primary-hover text-white text-sm font-medium px-4",
           }}
         />
 
