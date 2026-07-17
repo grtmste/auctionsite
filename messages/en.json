@@ -239,5 +239,28 @@
     "rulesSub": "Terms and rules for participating in auctions",
     "faqSub": "Frequently asked questions and answers",
     "privacySub": "How we collect and protect your data"
+  },
+  "offer": {
+    "button": "Sell your vehicle",
+    "title": "Personal offer",
+    "subtitle": "Fill in the form and send us your vehicle details – we'll make you an offer.",
+    "name": "Name",
+    "email": "E-mail",
+    "phone": "Phone",
+    "make": "Car make",
+    "model": "Car model",
+    "regNumber": "Reg. number",
+    "location": "Location",
+    "images": "Upload images",
+    "imagesHint": "Up to 10 images.",
+    "message": "Message",
+    "wantBuyout": "I want an immediate buyout price offer",
+    "wantTransport": "I want a transport price offer to the sales lot",
+    "privacy": "I agree to the privacy policy",
+    "submit": "Send",
+    "sending": "Sending…",
+    "success": "Thank you! We'll contact you soon.",
+    "error": "Sending failed. Please try again.",
+    "optional": "optional"
   }
 }

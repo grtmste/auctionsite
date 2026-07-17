@@ -239,5 +239,28 @@
     "rulesSub": "Dalības noteikumi izsolēs",
     "faqSub": "Biežāk uzdotie jautājumi un atbildes",
     "privacySub": "Kā mēs vācam un aizsargājam jūsu datus"
+  },
+  "offer": {
+    "button": "Pārdod savu auto",
+    "title": "Personīgs piedāvājums",
+    "subtitle": "Aizpildi pieteikumu un atsūti sava auto datus – mēs sagatavosim piedāvājumu.",
+    "name": "Vārds",
+    "email": "E-pasts",
+    "phone": "Tālrunis",
+    "make": "Auto marka",
+    "model": "Auto modelis",
+    "regNumber": "Reģ. numurs",
+    "location": "Atrašanās vieta",
+    "images": "Attēlu augšupielāde",
+    "imagesHint": "Līdz 10 attēliem.",
+    "message": "Ziņojums",
+    "wantBuyout": "Vēlos tūlītēju izpirkuma cenas piedāvājumu",
+    "wantTransport": "Vēlos transporta cenas piedāvājumu uz tirdzniecības vietu",
+    "privacy": "Piekrītu privātuma politikai",
+    "submit": "Sūtīt",
+    "sending": "Sūta…",
+    "success": "Paldies! Mēs drīz ar jums sazināsimies.",
+    "error": "Neizdevās nosūtīt. Mēģini vēlreiz.",
+    "optional": "nav obligāti"
   }
 }

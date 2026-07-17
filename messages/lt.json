@@ -239,5 +239,28 @@
     "rulesSub": "Dalyvavimo aukcionuose sąlygos ir taisyklės",
     "faqSub": "Dažnai užduodami klausimai ir atsakymai",
     "privacySub": "Kaip renkame ir saugome jūsų duomenis"
+  },
+  "offer": {
+    "button": "Parduok savo automobilį",
+    "title": "Asmeninis pasiūlymas",
+    "subtitle": "Užpildyk paraišką ir atsiųsk mums automobilio duomenis – pateiksime pasiūlymą.",
+    "name": "Vardas",
+    "email": "El. paštas",
+    "phone": "Telefonas",
+    "make": "Automobilio markė",
+    "model": "Automobilio modelis",
+    "regNumber": "Reg. numeris",
+    "location": "Vieta",
+    "images": "Nuotraukų įkėlimas",
+    "imagesHint": "Iki 10 nuotraukų.",
+    "message": "Žinutė",
+    "wantBuyout": "Noriu skubaus išpirkimo kainos pasiūlymo",
+    "wantTransport": "Noriu transportavimo į aikštelę kainos pasiūlymo",
+    "privacy": "Sutinku su privatumo politika",
+    "submit": "Siųsti",
+    "sending": "Siunčiama…",
+    "success": "Ačiū! Greitai su jumis susisieksime.",
+    "error": "Nepavyko išsiųsti. Bandykite dar kartą.",
+    "optional": "neprivaloma"
   }
 }

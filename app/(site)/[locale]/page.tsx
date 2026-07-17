@@ -7,6 +7,7 @@ import { getSettings } from "@/lib/settings";
 import { runStatusTransitions } from "@/lib/auction-status";
 import { toCardData } from "@/lib/serialize";
 import { AuctionCard } from "@/components/auction/auction-card";
+import { PersonalOffer } from "@/components/personal-offer";
 
 export const dynamic = "force-dynamic";
 
@@ -114,6 +115,21 @@ export default async function HomePage({
               <p className="mt-2 text-sm text-muted">{category.desc}</p>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Sell your car — personal offer CTA */}
+      <section className="mx-auto max-w-7xl px-4 pb-4">
+        <div className="relative overflow-hidden rounded-lg border border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-surface p-8 md:flex md:items-center md:justify-between md:p-10">
+          <div className="max-w-xl">
+            <h2 className="text-2xl font-bold tracking-tight">
+              {t("offer.title")}
+            </h2>
+            <p className="mt-2 text-muted">{t("offer.subtitle")}</p>
+          </div>
+          <div className="mt-5 md:mt-0">
+            <PersonalOffer className="!px-6" />
+          </div>
         </div>
       </section>
 

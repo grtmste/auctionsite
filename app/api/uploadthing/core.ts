@@ -19,6 +19,13 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       return { url: file.ufsUrl };
     }),
+
+  /** Photos attached to a public "personal offer" request (sell your car). */
+  personalOfferImage: f({
+    image: { maxFileSize: "8MB", maxFileCount: 10 },
+  }).onUploadComplete(async ({ file }) => {
+    return { url: file.ufsUrl };
+  }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;

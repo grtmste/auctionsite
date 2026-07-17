@@ -239,5 +239,28 @@
     "rulesSub": "Oksjonil osalemise tingimused ja kord",
     "faqSub": "Korduma kippuvad küsimused ja vastused",
     "privacySub": "Kuidas me sinu andmeid kogume ja kaitseme"
+  },
+  "offer": {
+    "button": "Müü oma sõiduk",
+    "title": "Personaalne pakkumine",
+    "subtitle": "Täida avaldus ja saada meile oma sõiduki andmed – teeme sulle pakkumise.",
+    "name": "Nimi",
+    "email": "E-post",
+    "phone": "Telefon",
+    "make": "Auto mark",
+    "model": "Auto mudel",
+    "regNumber": "Auto reg. nr",
+    "location": "Asukoht",
+    "images": "Piltide üleslaadimine",
+    "imagesHint": "Lisada saab kuni 10 pilti.",
+    "message": "Sõnumi sisu",
+    "wantBuyout": "Soovin kohese väljaostu hinnapakkumist",
+    "wantTransport": "Soovin transpordi hinnapakkumist müügiplatsile",
+    "privacy": "Nõustun privaatsuspoliitikaga",
+    "submit": "Saada",
+    "sending": "Saadan…",
+    "success": "Aitäh! Võtame sinuga peagi ühendust.",
+    "error": "Saatmine ebaõnnestus. Proovi uuesti.",
+    "optional": "valikuline"
   }
 }

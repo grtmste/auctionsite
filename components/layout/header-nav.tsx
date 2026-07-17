@@ -8,6 +8,7 @@ import { Link } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "./language-switcher";
 import { Logo } from "./logo";
+import { PersonalOffer } from "@/components/personal-offer";
 
 interface HeaderNavProps {
   user: { name: string; isAdmin: boolean; isVendor: boolean } | null;
@@ -83,6 +84,9 @@ export function HeaderNav({ user, logoUrl }: HeaderNavProps) {
           >
             {t("contact")}
           </Link>
+          <div className="px-2">
+            <PersonalOffer variant="link" className="px-3 py-2 text-sm font-medium text-primary hover:text-primary-hover cursor-pointer" />
+          </div>
         </nav>
 
         <div className="hidden items-center gap-4 lg:flex">
@@ -161,6 +165,9 @@ export function HeaderNav({ user, logoUrl }: HeaderNavProps) {
               </Link>
             )
           )}
+          <div className="py-2.5" onClick={() => setMobileOpen(false)}>
+            <PersonalOffer variant="link" className="text-sm font-medium text-primary cursor-pointer" />
+          </div>
           <div className="my-3 border-t border-border pt-3">
             <LanguageSwitcher />
           </div>
