@@ -602,6 +602,7 @@ export async function closePhoneAuction(auctionId: string) {
     finalPrice != null &&
     (!auction.reservePrice || finalPrice >= auction.reservePrice);
 
+  const concludedAt = new Date();
   await db.auction.update({
     where: { id: auctionId },
     data: {
@@ -609,7 +610,10 @@ export async function closePhoneAuction(auctionId: string) {
       finalPrice: sold ? finalPrice : null,
       currentBid: finalPrice ?? auction.currentBid,
       reserveMet: sold,
-      phoneAuctionEnd: new Date(),
+      phoneAuctionEnd: concludedAt,
+      // The public "Lõppes" time is the moment the admin concluded it, not the
+      // original online-round end date.
+      auctionEnd: concludedAt,
     },
   });
 
@@ -634,6 +638,8 @@ export async function closePhoneAuction(auctionId: string) {
   }
 
   revalidatePath("/admin/telefonoksjon");
+  revalidatePath("/admin/oksjonid");
+  revalidatePath("/");
   return { ok: true };
 }
 

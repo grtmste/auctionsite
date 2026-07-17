@@ -121,7 +121,8 @@
     "channel": "Channel",
     "channelWeb": "Web",
     "channelPhone": "Phone",
-    "editProduct": "Edit product"
+    "editProduct": "Edit product",
+    "endedAt": "Ended"
   },
   "bid": {
     "placeBid": "Place bid",

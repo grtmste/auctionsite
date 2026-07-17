@@ -121,7 +121,8 @@
     "channel": "Канал",
     "channelWeb": "Веб",
     "channelPhone": "Телефон",
-    "editProduct": "Редактировать товар"
+    "editProduct": "Редактировать товар",
+    "endedAt": "Завершился"
   },
   "bid": {
     "placeBid": "Сделать ставку",

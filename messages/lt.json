@@ -121,7 +121,8 @@
     "channel": "Kanalas",
     "channelWeb": "Internetu",
     "channelPhone": "Telefonu",
-    "editProduct": "Redaguoti produktą"
+    "editProduct": "Redaguoti produktą",
+    "endedAt": "Baigėsi"
   },
   "bid": {
     "placeBid": "Pateikti statymą",

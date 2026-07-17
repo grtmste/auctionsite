@@ -30,11 +30,29 @@ export default async function AdminAuctionsPage({
 
   const auctions = await db.auction.findMany({
     where,
-    orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { bids: true, phoneBids: true } },
       vendor: { select: { name: true, company: true } },
     },
+  });
+
+  // Ordering: live auctions ending soonest first, then SOLD, then ENDED
+  // (Lõppenud), then drafts/cancelled.
+  const STATUS_RANK: Record<string, number> = {
+    ACTIVE: 0,
+    PHONE_AUCTION: 0,
+    SOLD: 1,
+    ENDED: 2,
+    DRAFT: 3,
+    CANCELLED: 4,
+  };
+  auctions.sort((a, b) => {
+    const ra = STATUS_RANK[a.status] ?? 5;
+    const rb = STATUS_RANK[b.status] ?? 5;
+    if (ra !== rb) return ra - rb;
+    if (ra === 0) return a.auctionEnd.getTime() - b.auctionEnd.getTime(); // soonest first
+    if (ra === 1 || ra === 2) return b.auctionEnd.getTime() - a.auctionEnd.getTime(); // most recent
+    return b.createdAt.getTime() - a.createdAt.getTime();
   });
 
   const rows = auctions.map((auction) => ({

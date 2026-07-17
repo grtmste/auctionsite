@@ -121,7 +121,8 @@
     "channel": "Kanal",
     "channelWeb": "Veeb",
     "channelPhone": "Telefon",
-    "editProduct": "Muuda toodet"
+    "editProduct": "Muuda toodet",
+    "endedAt": "Lõppes"
   },
   "bid": {
     "placeBid": "Tee pakkumine",

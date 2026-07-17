@@ -197,6 +197,11 @@ export function BidPanel({ auction, bids: initialBids, viewer }: BidPanelProps) 
             {t("auction.phoneAuctionBanner")}
           </p>
         )}
+        {!isActive && !isPhone && (
+          <p className="mt-3 text-xs text-muted">
+            {t("auction.endedAt")}: {formatDateTime(auction.auctionEnd, locale)}
+          </p>
+        )}
 
         {/* Fixed-step bid button */}
         {isActive && (

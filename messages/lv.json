@@ -121,7 +121,8 @@
     "channel": "Kanāls",
     "channelWeb": "Tīmeklis",
     "channelPhone": "Telefons",
-    "editProduct": "Rediģēt produktu"
+    "editProduct": "Rediģēt produktu",
+    "endedAt": "Beidzās"
   },
   "bid": {
     "placeBid": "Izdarīt likmi",
