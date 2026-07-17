@@ -29,7 +29,12 @@ interface AccountTabsProps {
     name: string;
     email: string;
     phone: string;
+    phone2: string;
+    personalId: string;
     company: string;
+    regCode: string;
+    vatNo: string;
+    address: string;
     emailVerified: boolean;
   };
   bids: AccountBid[];
@@ -56,7 +61,12 @@ export function AccountTabs({ user, bids }: AccountTabsProps) {
       body: JSON.stringify({
         name: formData.get("name"),
         phone: formData.get("phone") || null,
+        phone2: formData.get("phone2") || null,
+        personalId: formData.get("personalId") || null,
         company: formData.get("company") || null,
+        regCode: formData.get("regCode") || null,
+        vatNo: formData.get("vatNo") || null,
+        address: formData.get("address") || null,
       }),
     });
     setProfileMessage(res.ok ? t("saved") : tCommon("error"));
@@ -155,13 +165,44 @@ export function AccountTabs({ user, bids }: AccountTabsProps) {
                   <Label htmlFor="acc-name">{tAuth("name")}</Label>
                   <Input id="acc-name" name="name" defaultValue={user.name} required />
                 </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor="acc-phone">{tAuth("phone1")}</Label>
+                    <Input id="acc-phone" name="phone" defaultValue={user.phone} />
+                  </div>
+                  <div>
+                    <Label htmlFor="acc-phone2">
+                      {tAuth("phone2")}{" "}
+                      <span className="text-muted">({tAuth("optional")})</span>
+                    </Label>
+                    <Input id="acc-phone2" name="phone2" defaultValue={user.phone2} />
+                  </div>
+                </div>
                 <div>
-                  <Label htmlFor="acc-phone">{tAuth("phone")}</Label>
-                  <Input id="acc-phone" name="phone" defaultValue={user.phone} />
+                  <Label htmlFor="acc-personalId">{tAuth("personalId")}</Label>
+                  <Input
+                    id="acc-personalId"
+                    name="personalId"
+                    defaultValue={user.personalId}
+                  />
                 </div>
                 <div>
                   <Label htmlFor="acc-company">{tAuth("company")}</Label>
                   <Input id="acc-company" name="company" defaultValue={user.company} />
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <Label htmlFor="acc-regCode">{tAuth("regCode")}</Label>
+                    <Input id="acc-regCode" name="regCode" defaultValue={user.regCode} />
+                  </div>
+                  <div>
+                    <Label htmlFor="acc-vatNo">{tAuth("vatNo")}</Label>
+                    <Input id="acc-vatNo" name="vatNo" defaultValue={user.vatNo} />
+                  </div>
+                </div>
+                <div>
+                  <Label htmlFor="acc-address">{tAuth("address")}</Label>
+                  <Input id="acc-address" name="address" defaultValue={user.address} />
                 </div>
                 {profileMessage && <p className="text-sm text-success">{profileMessage}</p>}
                 <Button type="submit">{tCommon("save")}</Button>

@@ -13,6 +13,7 @@ model User {
   emailVerified DateTime?
   name          String?
   phone         String?
+  phone2        String? // optional second (e.g. company) number
   company       String?
   personalId    String? // isikukood
   regCode       String? // company registry code

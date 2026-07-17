@@ -14,6 +14,7 @@ const EMPTY = {
   name: "",
   email: "",
   phone: "",
+  phone2: "",
   company: "",
   regCode: "",
   vatNo: "",
@@ -92,7 +93,7 @@ export function CreateUserDialog() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label htmlFor="cu-phone">Telefon</Label>
+              <Label htmlFor="cu-phone">Telefon 1</Label>
               <Input
                 id="cu-phone"
                 value={form.phone}
@@ -100,13 +101,21 @@ export function CreateUserDialog() {
               />
             </div>
             <div>
-              <Label htmlFor="cu-personalId">Isikukood</Label>
+              <Label htmlFor="cu-phone2">Telefon 2</Label>
               <Input
-                id="cu-personalId"
-                value={form.personalId}
-                onChange={(e) => set("personalId", e.target.value)}
+                id="cu-phone2"
+                value={form.phone2}
+                onChange={(e) => set("phone2", e.target.value)}
               />
             </div>
+          </div>
+          <div>
+            <Label htmlFor="cu-personalId">Isikukood</Label>
+            <Input
+              id="cu-personalId"
+              value={form.personalId}
+              onChange={(e) => set("personalId", e.target.value)}
+            />
           </div>
           <div>
             <Label htmlFor="cu-company">Ettevõte</Label>

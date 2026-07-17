@@ -183,7 +183,13 @@
     "verificationSuccess": "El. paštas patvirtintas! Dabar galite pateikti statymus.",
     "verificationFailed": "Patvirtinimo nuoroda negalioja arba pasibaigė.",
     "invalidToken": "Nuoroda negalioja arba pasibaigė",
-    "ageConfirm": "Patvirtinu, kad esu ne jaunesnis nei 18 metų"
+    "ageConfirm": "Patvirtinu, kad esu ne jaunesnis nei 18 metų",
+    "phone1": "Telefonas 1",
+    "phone2": "Telefonas 2",
+    "personalId": "Asmens kodas",
+    "regCode": "Registro kodas",
+    "vatNo": "PVM numeris",
+    "address": "Adresas"
   },
   "account": {
     "title": "Mano paskyra",

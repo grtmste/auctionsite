@@ -183,7 +183,13 @@
     "verificationSuccess": "E-post on kinnitatud! Võite nüüd pakkumisi teha.",
     "verificationFailed": "Kinnituslink on vigane või aegunud.",
     "invalidToken": "Link on vigane või aegunud",
-    "ageConfirm": "Kinnitan, et olen vähemalt 18-aastane"
+    "ageConfirm": "Kinnitan, et olen vähemalt 18-aastane",
+    "phone1": "Telefon 1",
+    "phone2": "Telefon 2",
+    "personalId": "Isikukood",
+    "regCode": "Registrikood",
+    "vatNo": "KMKR (VAT nr)",
+    "address": "Aadress"
   },
   "account": {
     "title": "Minu konto",

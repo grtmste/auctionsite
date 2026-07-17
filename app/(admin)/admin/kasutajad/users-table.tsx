@@ -34,6 +34,7 @@ interface Row {
   name: string;
   email: string;
   phone: string;
+  phone2: string;
   company: string;
   regCode: string;
   vatNo: string;
@@ -164,6 +165,7 @@ export function UsersTable({ users }: { users: Row[] }) {
             name: editing.name,
             email: editing.email,
             phone: editing.phone,
+            phone2: editing.phone2,
             company: editing.company,
             regCode: editing.regCode,
             vatNo: editing.vatNo,

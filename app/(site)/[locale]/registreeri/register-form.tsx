@@ -41,7 +41,12 @@ export function RegisterForm() {
           password,
           name: formData.get("name"),
           phone: formData.get("phone"),
+          phone2: formData.get("phone2") || null,
+          personalId: formData.get("personalId") || null,
           company: formData.get("company") || null,
+          regCode: formData.get("regCode") || null,
+          vatNo: formData.get("vatNo") || null,
+          address: formData.get("address") || null,
         }),
       });
       if (res.ok) {
@@ -79,16 +84,49 @@ export function RegisterForm() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label htmlFor="reg-phone">{t("phone")}</Label>
+            <Label htmlFor="reg-phone">{t("phone1")}</Label>
             <Input id="reg-phone" name="phone" type="tel" required autoComplete="tel" />
           </div>
           <div>
-            <Label htmlFor="reg-company">
-              {t("company")} <span className="text-muted">({t("optional")})</span>
+            <Label htmlFor="reg-phone2">
+              {t("phone2")} <span className="text-muted">({t("optional")})</span>
             </Label>
-            <Input id="reg-company" name="company" autoComplete="organization" />
+            <Input id="reg-phone2" name="phone2" type="tel" autoComplete="tel" />
           </div>
         </div>
+        <div>
+          <Label htmlFor="reg-personalId">
+            {t("personalId")} <span className="text-muted">({t("optional")})</span>
+          </Label>
+          <Input id="reg-personalId" name="personalId" />
+        </div>
+
+        <div className="rounded-md border border-border/70 bg-background/40 p-4">
+          <p className="mb-3 text-sm font-medium text-muted">
+            {t("company")} <span className="font-normal">({t("optional")})</span>
+          </p>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="reg-company">{t("company")}</Label>
+              <Input id="reg-company" name="company" autoComplete="organization" />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <Label htmlFor="reg-regCode">{t("regCode")}</Label>
+                <Input id="reg-regCode" name="regCode" />
+              </div>
+              <div>
+                <Label htmlFor="reg-vatNo">{t("vatNo")}</Label>
+                <Input id="reg-vatNo" name="vatNo" />
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="reg-address">{t("address")}</Label>
+              <Input id="reg-address" name="address" autoComplete="street-address" />
+            </div>
+          </div>
+        </div>
+
         <div>
           <Label htmlFor="reg-password">{t("password")}</Label>
           <Input

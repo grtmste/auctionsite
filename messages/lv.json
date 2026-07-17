@@ -183,7 +183,13 @@
     "verificationSuccess": "E-pasts apstiprināts! Tagad varat izdarīt likmes.",
     "verificationFailed": "Apstiprinājuma saite ir nederīga vai beigusies.",
     "invalidToken": "Saite ir nederīga vai beigusies",
-    "ageConfirm": "Apliecinu, ka esmu vismaz 18 gadus vecs"
+    "ageConfirm": "Apliecinu, ka esmu vismaz 18 gadus vecs",
+    "phone1": "Tālrunis 1",
+    "phone2": "Tālrunis 2",
+    "personalId": "Personas kods",
+    "regCode": "Reģistrācijas kods",
+    "vatNo": "PVN numurs",
+    "address": "Adrese"
   },
   "account": {
     "title": "Mans konts",

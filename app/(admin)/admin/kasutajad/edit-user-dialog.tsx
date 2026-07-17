@@ -15,6 +15,7 @@ export interface EditableUser {
   name: string;
   email: string;
   phone: string;
+  phone2: string;
   company: string;
   regCode: string;
   vatNo: string;
@@ -38,6 +39,7 @@ export function EditUserDialog({
     name: user.name === "—" ? "" : user.name,
     email: user.email,
     phone: user.phone,
+    phone2: user.phone2,
     company: user.company,
     regCode: user.regCode,
     vatNo: user.vatNo,
@@ -100,17 +102,21 @@ export function EditUserDialog({
         </div>
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <Label htmlFor="eu-phone">Telefon</Label>
+            <Label htmlFor="eu-phone">Telefon 1</Label>
             <Input id="eu-phone" value={form.phone} onChange={(e) => set("phone", e.target.value)} />
           </div>
           <div>
-            <Label htmlFor="eu-personalId">Isikukood</Label>
-            <Input
-              id="eu-personalId"
-              value={form.personalId}
-              onChange={(e) => set("personalId", e.target.value)}
-            />
+            <Label htmlFor="eu-phone2">Telefon 2</Label>
+            <Input id="eu-phone2" value={form.phone2} onChange={(e) => set("phone2", e.target.value)} />
           </div>
+        </div>
+        <div>
+          <Label htmlFor="eu-personalId">Isikukood</Label>
+          <Input
+            id="eu-personalId"
+            value={form.personalId}
+            onChange={(e) => set("personalId", e.target.value)}
+          />
         </div>
         <div>
           <Label htmlFor="eu-company">Ettevõte</Label>

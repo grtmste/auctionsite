@@ -183,7 +183,13 @@
     "verificationSuccess": "Email verified! You can now place bids.",
     "verificationFailed": "The verification link is invalid or expired.",
     "invalidToken": "The link is invalid or expired",
-    "ageConfirm": "I confirm that I am at least 18 years old"
+    "ageConfirm": "I confirm that I am at least 18 years old",
+    "phone1": "Phone 1",
+    "phone2": "Phone 2",
+    "personalId": "Personal ID code",
+    "regCode": "Registry code",
+    "vatNo": "VAT number",
+    "address": "Address"
   },
   "account": {
     "title": "My account",

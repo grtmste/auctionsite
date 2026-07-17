@@ -19,6 +19,7 @@ export default async function AdminUsersPage() {
     name: user.name ?? "—",
     email: user.email,
     phone: user.phone ?? "",
+    phone2: user.phone2 ?? "",
     company: user.company ?? "",
     regCode: user.regCode ?? "",
     vatNo: user.vatNo ?? "",

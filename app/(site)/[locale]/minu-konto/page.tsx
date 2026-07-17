@@ -72,7 +72,12 @@ export default async function AccountPage({
           name: user!.name ?? "",
           email: user!.email,
           phone: user!.phone ?? "",
+          phone2: user!.phone2 ?? "",
+          personalId: user!.personalId ?? "",
           company: user!.company ?? "",
+          regCode: user!.regCode ?? "",
+          vatNo: user!.vatNo ?? "",
+          address: user!.address ?? "",
           emailVerified: Boolean(user!.emailVerified),
         }}
         bids={serializedBids}

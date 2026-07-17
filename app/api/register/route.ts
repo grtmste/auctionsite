@@ -12,7 +12,12 @@ const registerSchema = z.object({
   password: z.string().min(8).max(200),
   name: z.string().min(1).max(200),
   phone: z.string().min(5).max(50),
+  phone2: z.string().max(50).optional().nullable(),
+  personalId: z.string().max(50).optional().nullable(),
   company: z.string().max(200).optional().nullable(),
+  regCode: z.string().max(50).optional().nullable(),
+  vatNo: z.string().max(50).optional().nullable(),
+  address: z.string().max(300).optional().nullable(),
 });
 
 export async function POST(request: NextRequest) {
@@ -34,7 +39,12 @@ export async function POST(request: NextRequest) {
       email,
       name: parsed.data.name.trim(),
       phone: parsed.data.phone.trim(),
+      phone2: parsed.data.phone2?.trim() || null,
+      personalId: parsed.data.personalId?.trim() || null,
       company: parsed.data.company?.trim() || null,
+      regCode: parsed.data.regCode?.trim() || null,
+      vatNo: parsed.data.vatNo?.trim() || null,
+      address: parsed.data.address?.trim() || null,
       passwordHash,
     },
   });
