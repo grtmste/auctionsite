@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,9 +28,12 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || typeof document === "undefined") return null;
 
-  return (
+  // Render into <body> so the overlay's `fixed` positioning is relative to the
+  // viewport. Otherwise an ancestor with a transform/filter/backdrop-blur (e.g.
+  // the sticky header) becomes the containing block and the modal sticks to it.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
       onClick={onClose}
@@ -55,6 +59,7 @@ export function Dialog({ open, onClose, title, children, className }: DialogProp
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
