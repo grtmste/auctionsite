@@ -466,6 +466,12 @@ export function AuctionForm({
 
         <UploadDropzone
           endpoint="auctionImage"
+          content={{
+            label: "Lohista pildid siia või vali failid",
+            allowedContent: "Kuni 20 pilti, iga kuni 8 MB",
+            button: ({ isUploading }: { isUploading: boolean }) =>
+              isUploading ? "Laen üles…" : "Vali failid",
+          }}
           onClientUploadComplete={(files) => {
             const added = files
               .map((file) => ({ url: file.ufsUrl ?? file.url, alt: "" }))
@@ -481,11 +487,12 @@ export function AuctionForm({
           }
           appearance={{
             container:
-              "rounded-md border-2 border-dashed border-border bg-background py-6",
+              "flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed border-border bg-background px-6 py-8",
+            uploadIcon: "text-muted",
             label: "text-sm font-medium text-foreground hover:text-primary",
             allowedContent: "text-xs text-muted",
             button:
-              "!bg-primary hover:!bg-primary-hover text-white text-sm font-medium px-4",
+              "mt-1 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover",
           }}
         />
 

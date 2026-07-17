@@ -261,6 +261,8 @@
     "sending": "Sūta…",
     "success": "Paldies! Mēs drīz ar jums sazināsimies.",
     "error": "Neizdevās nosūtīt. Mēģini vēlreiz.",
-    "optional": "nav obligāti"
+    "optional": "nav obligāti",
+    "uploadLabel": "Ievelciet attēlus šeit vai izvēlieties failus",
+    "uploadButton": "Izvēlēties failus"
   }
 }

@@ -261,6 +261,8 @@
     "sending": "Saadan…",
     "success": "Aitäh! Võtame sinuga peagi ühendust.",
     "error": "Saatmine ebaõnnestus. Proovi uuesti.",
-    "optional": "valikuline"
+    "optional": "valikuline",
+    "uploadLabel": "Lohista pildid siia või vali failid",
+    "uploadButton": "Vali failid"
   }
 }

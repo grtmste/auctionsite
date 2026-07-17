@@ -53,7 +53,10 @@ export function CountdownTimer({
 
   if (expired) {
     return (
-      <span className={cn("font-mono text-sm font-semibold text-muted", className)}>
+      <span
+        suppressHydrationWarning
+        className={cn("font-mono text-sm font-semibold text-muted", className)}
+      >
         00:00:00
       </span>
     );
@@ -66,6 +69,7 @@ export function CountdownTimer({
 
   return (
     <span
+      suppressHydrationWarning
       className={cn(
         "inline-flex items-center gap-1.5 font-mono font-semibold tabular-nums",
         compact ? "text-sm" : "text-lg",

@@ -261,6 +261,8 @@
     "sending": "Siunčiama…",
     "success": "Ačiū! Greitai su jumis susisieksime.",
     "error": "Nepavyko išsiųsti. Bandykite dar kartą.",
-    "optional": "neprivaloma"
+    "optional": "neprivaloma",
+    "uploadLabel": "Vilkite nuotraukas čia arba pasirinkite failus",
+    "uploadButton": "Pasirinkti failus"
   }
 }

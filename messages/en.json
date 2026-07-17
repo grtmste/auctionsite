@@ -261,6 +261,8 @@
     "sending": "Sending…",
     "success": "Thank you! We'll contact you soon.",
     "error": "Sending failed. Please try again.",
-    "optional": "optional"
+    "optional": "optional",
+    "uploadLabel": "Drag images here or choose files",
+    "uploadButton": "Choose files"
   }
 }

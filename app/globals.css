@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "@uploadthing/react/styles.css";
 
 @theme {
   /* Light theme, romu.ee branding (orange accent) */
