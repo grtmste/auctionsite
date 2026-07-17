@@ -1,17 +1,20 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
 import { ImageOff, Phone } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { formatCurrency } from "@/lib/utils";
+import { getPusherClient } from "@/lib/pusher-client";
 import { StatusBadge } from "./status-badge";
 import { CountdownTimer } from "./countdown-timer";
 import type { AuctionStatus } from "@prisma/client";
 
 export interface AuctionCardProps {
   auction: {
+    id: string;
     slug: string;
     title: string;
     status: AuctionStatus;
@@ -30,10 +33,56 @@ export function AuctionCard({ auction }: AuctionCardProps) {
   const router = useRouter();
   const isActive = auction.status === "ACTIVE";
   const isPhone = auction.status === "PHONE_AUCTION";
+
+  // Live current bid + bid count, so listings reflect new bids (incl. phone
+  // bids entered by an admin) without a manual refresh. Instant via Pusher when
+  // configured, with a polling safety net.
+  const [liveBid, setLiveBid] = useState(auction.currentBid);
+  const [liveCount, setLiveCount] = useState(auction.bidCount);
+
+  useEffect(() => {
+    if (auction.status !== "ACTIVE" && auction.status !== "PHONE_AUCTION") return;
+
+    const pusher = getPusherClient();
+    let channel: ReturnType<NonNullable<typeof pusher>["subscribe"]> | null = null;
+    if (pusher) {
+      channel = pusher.subscribe(`auction-${auction.id}`);
+      channel.bind("bid-placed", (data: { amount: number; bids?: unknown[] }) => {
+        setLiveBid(data.amount);
+        if (Array.isArray(data.bids)) setLiveCount(data.bids.length);
+      });
+    }
+
+    const poll = async () => {
+      if (document.hidden) return;
+      try {
+        const res = await fetch(`/api/auction-state/${auction.id}`, { cache: "no-store" });
+        if (!res.ok) return;
+        const data: { currentBid: number | null; bids: unknown[] } = await res.json();
+        setLiveBid(data.currentBid);
+        if (Array.isArray(data.bids)) setLiveCount(data.bids.length);
+      } catch {
+        // transient error — next tick retries
+      }
+    };
+    const interval = setInterval(poll, pusher ? 45_000 : 20_000);
+
+    return () => {
+      if (pusher && channel) {
+        channel.unbind_all();
+        pusher.unsubscribe(`auction-${auction.id}`);
+      }
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [auction.id, auction.status]);
+
+  const currentBid = liveBid;
+  const bidCount = Math.max(liveCount, auction.bidCount);
   const price =
     auction.status === "SOLD" || auction.status === "ENDED"
-      ? auction.finalPrice ?? auction.currentBid
-      : auction.currentBid;
+      ? auction.finalPrice ?? currentBid
+      : currentBid;
 
   return (
     <Link
@@ -74,7 +123,7 @@ export function AuctionCard({ auction }: AuctionCardProps) {
             </p>
           </div>
           <span className="text-xs text-muted">
-            {auction.bidCount > 0 ? `${auction.bidCount}×` : t("noBids")}
+            {bidCount > 0 ? `${bidCount}×` : t("noBids")}
           </span>
         </div>
 

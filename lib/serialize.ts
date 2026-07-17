@@ -8,6 +8,7 @@ export function toCardData(auction: AuctionCardData, locale: string) {
   const bestPhone = auction.phoneBids?.[0]?.amount ?? 0;
   const effectiveBid = Math.max(auction.currentBid ?? 0, bestPhone) || null;
   return {
+    id: auction.id,
     slug: auction.slug,
     title: localized(auction.title, locale),
     status: auction.status,

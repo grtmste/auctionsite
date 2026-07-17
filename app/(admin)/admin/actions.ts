@@ -471,6 +471,42 @@ export async function savePhoneBid(input: PhoneBidInput) {
   const admin = await requireAdmin();
   const data = phoneBidSchema.parse(input);
 
+  // Don't let a bidder bid against themselves: if the linked user already holds
+  // the current highest bid (web or confirmed phone), reject a confirmed phone
+  // bid that would raise their own price.
+  if (data.status === "CONFIRMED" && data.bidderUserId) {
+    const auction = await db.auction.findUnique({
+      where: { id: data.auctionId },
+      include: {
+        bids: { orderBy: { amount: "desc" }, take: 1, select: { userId: true, amount: true } },
+        phoneBids: {
+          where: {
+            status: "CONFIRMED",
+            ...(data.id ? { id: { not: data.id } } : {}),
+          },
+          orderBy: { amount: "desc" },
+          take: 1,
+          select: { bidderUserId: true, amount: true },
+        },
+      },
+    });
+    const topWeb = auction?.bids[0];
+    const topPhone = auction?.phoneBids[0];
+    let leaderId: string | null = null;
+    let leaderAmount = 0;
+    if (topWeb && topWeb.amount >= leaderAmount) {
+      leaderId = topWeb.userId;
+      leaderAmount = topWeb.amount;
+    }
+    if (topPhone && topPhone.amount > leaderAmount) {
+      leaderId = topPhone.bidderUserId;
+      leaderAmount = topPhone.amount;
+    }
+    if (leaderId === data.bidderUserId && data.amount > leaderAmount) {
+      return { ok: false as const, error: "OVERBID_SELF" };
+    }
+  }
+
   if (data.id) {
     await db.phoneBid.update({
       where: { id: data.id },
@@ -499,7 +535,8 @@ export async function savePhoneBid(input: PhoneBidInput) {
   }
   await syncPhoneBidToAuction(data.auctionId);
   revalidatePath("/admin/telefonoksjon");
-  return { ok: true };
+  revalidatePath("/");
+  return { ok: true as const };
 }
 
 /**

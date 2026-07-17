@@ -29,6 +29,10 @@ const STATUS_LABELS: Record<PhoneBidStatus, string> = {
   NO_ANSWER: "Ei vastanud",
 };
 
+// Statuses offered in the add/edit form (CONTACTED is legacy — still shown for
+// existing rows but no longer selectable).
+const FORM_STATUSES: PhoneBidStatus[] = ["CONFIRMED", "DECLINED", "NO_ANSWER"];
+
 const STATUS_VARIANTS: Record<
   PhoneBidStatus,
   "success" | "warning" | "muted" | "destructive"
@@ -87,7 +91,7 @@ const EMPTY_EDITOR: EditorState = {
   bidderPhone: "",
   bidderUserId: "",
   amount: "",
-  status: "CONTACTED",
+  status: "CONFIRMED",
   notes: "",
 };
 
@@ -120,7 +124,7 @@ export function PhoneAuctionModule({
       return;
     }
     startTransition(async () => {
-      await savePhoneBid({
+      const res = await savePhoneBid({
         id: editor.id,
         auctionId: auction.id,
         bidderName: editor.bidderName.trim(),
@@ -130,6 +134,14 @@ export function PhoneAuctionModule({
         status: editor.status,
         notes: editor.notes.trim() || null,
       });
+      if (!res.ok) {
+        setError(
+          res.error === "OVERBID_SELF"
+            ? "See kasutaja on juba kõrgeim pakkuja — ta ei saa iseennast üle pakkuda."
+            : "Salvestamine ebaõnnestus.",
+        );
+        return;
+      }
       setEditor(null);
       router.refresh();
     });
@@ -416,7 +428,21 @@ export function PhoneAuctionModule({
               <Select
                 id="pb-user"
                 value={editor.bidderUserId}
-                onChange={(e) => setEditor({ ...editor, bidderUserId: e.target.value })}
+                onChange={(e) => {
+                  const userId = e.target.value;
+                  const picked = linkedUser(userId);
+                  // Auto-fill name + phone from the selected user's account.
+                  setEditor({
+                    ...editor,
+                    bidderUserId: userId,
+                    ...(picked
+                      ? {
+                          bidderName: picked.name,
+                          bidderPhone: picked.phone ?? "",
+                        }
+                      : {}),
+                  });
+                }}
               >
                 <option value="">— pole seotud —</option>
                 {topBidders.map((bidder) => (
@@ -425,22 +451,27 @@ export function PhoneAuctionModule({
                   </option>
                 ))}
               </Select>
+              <p className="mt-1 text-xs text-muted">
+                Kasutaja valimisel täidetakse nimi ja telefon automaatselt.
+              </p>
             </div>
             <div>
-              <Label htmlFor="pb-status">Staatus</Label>
-              <Select
-                id="pb-status"
-                value={editor.status}
-                onChange={(e) =>
-                  setEditor({ ...editor, status: e.target.value as PhoneBidStatus })
-                }
-              >
-                {Object.entries(STATUS_LABELS).map(([value, label]) => (
-                  <option key={value} value={value}>
-                    {label}
-                  </option>
+              <Label>Staatus</Label>
+              <div className="mt-1 flex flex-wrap gap-4">
+                {FORM_STATUSES.map((value) => (
+                  <label key={value} className="flex items-center gap-2 text-sm">
+                    <input
+                      type="radio"
+                      name="pb-status"
+                      value={value}
+                      checked={editor.status === value}
+                      onChange={() => setEditor({ ...editor, status: value })}
+                      className="h-4 w-4 accent-[#E8830C]"
+                    />
+                    {STATUS_LABELS[value]}
+                  </label>
                 ))}
-              </Select>
+              </div>
             </div>
             <div>
               <Label htmlFor="pb-notes">Märkmed</Label>
